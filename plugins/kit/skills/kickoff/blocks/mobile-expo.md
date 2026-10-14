@@ -150,4 +150,24 @@ ME14. **Expo runs in its own terminal.** The dev server (`npx expo start` or the
     captured Metro hangs the session and serves nothing. Check: in a monorepo, the root
     `package.json` `dev` script excludes the mobile package and a dedicated mobile dev script
     exists.
+
+ME15. **Styling: uniwind + Tailwind v4, tokens only.** Styles are Tailwind v4 classes through
+    `uniwind` (`className` on React Native components); NativeWind only when the project
+    already uses it (record it in the decisions/ADRs). One root `global.css`:
+    `@import 'tailwindcss'; @import 'uniwind';`, then the UI library's theme if any, then
+    the brand tokens LAST in `@theme` (in Tailwind v4 the last definition wins, so a library
+    theme imported after the brand silently overrides `--color-surface` and friends). Brand
+    tokens come from `{{brand}}` or the monorepo's shared design-tokens package, never
+    retyped. Declare `@source` for every folder that holds classes (`app/` routes AND `src/`
+    features): Tailwind only generates classes it finds, and a folder it misses renders
+    screens at zero height — a blank app with no error. `metro.config.js` wraps every other
+    Metro wrapper with `withUniwindConfig(...)` (outermost) and sets `dtsFile` so class
+    names are typed. Components use semantic token classes (`bg-surface`, `text-text`,
+    `bg-brand-500`, `rounded-card`), never hex/rgb literals or raw `StyleSheet` colors.
+    Why: one token file drives web and mobile alike, and the two silent failures above
+    (theme order, missing `@source`) each cost a debugging day. Check: `package.json` has
+    `uniwind` and `tailwindcss@4` (and no `nativewind` unless recorded); `global.css`
+    imports in that order with `@source` lines covering `app/` and `src/`; Grep
+    `withUniwindConfig` in `metro.config.*` is the outermost call; Grep
+    `#[0-9a-fA-F]{3,8}\b|rgba?\(` in every mobile scope's `*.tsx` → only token files.
 <!-- /kit:block mobile-expo -->
