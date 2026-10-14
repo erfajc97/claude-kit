@@ -285,7 +285,7 @@ Builder report:
 - Test runner: Vitest (web, mobile and NestJS). Jest only when a project already uses it.
 - Web: Astro + React islands, TanStack Query, HeroUI, Tailwind v4, react-hook-form + zod.
 - API: NestJS + Prisma, zod DTOs (nestjs-zod), hand-written migrations.
-- Mobile: Expo + Expo Router, TanStack Query, SecureStore for secrets.
+- Mobile: Expo + Expo Router, uniwind + Tailwind v4 (tokens in `global.css` `@theme`), TanStack Query, SecureStore for secrets, Vitest.
 - E2E: Playwright (web).
 - Machine notes (Windows, rtk proxy) are NOT part of the kit; they belong in the user's
   global settings or the project block.

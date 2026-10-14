@@ -1,6 +1,8 @@
 {
   "name": "kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Core engineering harness: rule blocks, auditors and the kickoff / adopt / audit / phase-done workflow.",
-  "author": { "name": "erfajc97" }
+  "author": {
+    "name": "erfajc97"
+  }
 }
