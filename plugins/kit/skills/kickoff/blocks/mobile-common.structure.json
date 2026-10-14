@@ -1,0 +1,63 @@
+{
+  "block": "mobile-common",
+  "version": 1,
+  "appliesTo": { "kind": "mobile", "stacks": "*" },
+  "checks": [
+    {
+      "rule": "M1",
+      "type": "layout",
+      "description": "A feature root holds ONE entity-named root, types/data/schema and the layer folders",
+      "unit": "**/features/*",
+      "allowFiles": ["^[A-Z][A-Za-z0-9]*\\.tsx$", "^types\\.ts$", "^data\\.ts$", "^schema\\.ts$"],
+      "maxMatching": { "pattern": "^[A-Z][A-Za-z0-9]*\\.tsx$", "max": 1 },
+      "allowDirs": ["components", "hooks", "mutations", "services", "helpers", "__tests__"],
+      "severity": "HIGH",
+      "fix": "move the file into its layer folder; a second root becomes a component or its own feature"
+    },
+    {
+      "rule": "M1",
+      "type": "no-cross-import",
+      "description": "No imports between features",
+      "unit": "**/features/*",
+      "severity": "HIGH",
+      "fix": "move what both need to the app's shared folders"
+    },
+    {
+      "rule": "M1",
+      "type": "forbidden-content",
+      "description": "Components are dumb: no effects, queries, mutations, HTTP or feedback",
+      "files": ["**/features/*/components/**/*.tsx"],
+      "pattern": "\\buseEffect\\(|\\buse(Query|Mutation|InfiniteQuery)\\(|\\bfetch\\(|\\baxios\\b|\\btoast\\b|Toast\\.show|Alert\\.alert",
+      "severity": "HIGH",
+      "fix": "move the logic to the feature's hook (or mutation) and pass the result as props"
+    },
+    {
+      "rule": "M2",
+      "type": "forbidden-content",
+      "description": "useMutation lives only in mutations/",
+      "files": ["**/*.{ts,tsx}"],
+      "exclude": ["**/mutations/**", "**/__tests__/**", "**/*.{test,spec}.*"],
+      "pattern": "\\buseMutation\\(",
+      "severity": "HIGH",
+      "fix": "create use<Action>Mutation in the feature's mutations/ and call it from the hook"
+    },
+    {
+      "rule": "M1",
+      "type": "names",
+      "description": "hooks/ and mutations/ files are use* hooks",
+      "files": ["**/features/*/hooks/**", "**/features/*/mutations/**"],
+      "pattern": "^use[A-Z][A-Za-z0-9]*\\.tsx?$",
+      "severity": "MEDIUM",
+      "fix": "name the file after the hook it exports (useX.ts)"
+    },
+    {
+      "rule": "M1",
+      "type": "names",
+      "description": "components/ holds one PascalCase component per .tsx file",
+      "files": ["**/features/*/components/**"],
+      "pattern": "^[A-Z][A-Za-z0-9]*(\\.(ios|android))?\\.tsx$",
+      "severity": "MEDIUM",
+      "fix": "rename to the component name (PascalCase.tsx); move non-component code to helpers/"
+    }
+  ]
+}

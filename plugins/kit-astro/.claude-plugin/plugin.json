@@ -1,0 +1,6 @@
+{
+  "name": "kit-astro",
+  "version": "0.1.0",
+  "description": "Astro + React islands web builder, Playwright QA and stack knowledge.",
+  "author": { "name": "erfajc97" }
+}

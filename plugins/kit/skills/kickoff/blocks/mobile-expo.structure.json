@@ -1,0 +1,47 @@
+{
+  "block": "mobile-expo",
+  "version": 1,
+  "appliesTo": { "kind": "mobile", "stacks": ["expo"] },
+  "checks": [
+    {
+      "rule": "ME1",
+      "type": "forbidden-path",
+      "description": "Only routes and layouts live under the router root (app/)",
+      "when": { "exists": "app/_layout.tsx" },
+      "files": ["app/**/{components,hooks,helpers,services,mutations,utils,lib,features,__tests__}/**"],
+      "severity": "HIGH",
+      "fix": "every file under the router root becomes a route: move it to the feature folders"
+    },
+    {
+      "rule": "ME1",
+      "type": "forbidden-path",
+      "description": "Only routes and layouts live under the router root (src/app/)",
+      "when": { "exists": "src/app/_layout.tsx" },
+      "files": ["src/app/**/{components,hooks,helpers,services,mutations,utils,lib,features,__tests__}/**"],
+      "severity": "HIGH",
+      "fix": "every file under the router root becomes a route: move it to the feature folders"
+    },
+    {
+      "rule": "ME1",
+      "type": "forbidden-content",
+      "description": "Route files only render a feature root (no state, effects, queries or fetch)",
+      "when": { "exists": "app/_layout.tsx" },
+      "files": ["app/**/*.tsx"],
+      "exclude": ["app/**/_layout.tsx", "app/_layout.tsx"],
+      "pattern": "\\buse(State|Effect|Reducer|Query|Mutation)\\(|\\bfetch\\(",
+      "severity": "HIGH",
+      "fix": "move the logic into the feature root's hook; the route renders <FeatureRoot />"
+    },
+    {
+      "rule": "ME1",
+      "type": "forbidden-content",
+      "description": "Route files only render a feature root (no state, effects, queries or fetch)",
+      "when": { "exists": "src/app/_layout.tsx" },
+      "files": ["src/app/**/*.tsx"],
+      "exclude": ["src/app/**/_layout.tsx", "src/app/_layout.tsx"],
+      "pattern": "\\buse(State|Effect|Reducer|Query|Mutation)\\(|\\bfetch\\(",
+      "severity": "HIGH",
+      "fix": "move the logic into the feature root's hook; the route renders <FeatureRoot />"
+    }
+  ]
+}

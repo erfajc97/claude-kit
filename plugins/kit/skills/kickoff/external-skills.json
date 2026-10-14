@@ -1,0 +1,269 @@
+{
+  "cli": {
+    "tool": "vercel-labs skills CLI (npm package `skills`), run through npx",
+    "installTemplate": "npx --yes skills@latest add <source> --skill <name> -g -a claude-code -y",
+    "updateTemplate": "npx --yes skills@latest update <name> -g -y",
+    "installsTo": "~/.agents/skills/<name>, symlinked as ~/.claude/skills/<name>; tracked in ~/.agents/.skill-lock.json",
+    "verified": "skills 1.7.2 on 2026-10-14 (help and README). It declares node >=22.20.0; older Node 22 prints an EBADENGINE warning.",
+    "policy": "The kit ships only its own skills. Every third-party skill is external: installed and updated on each machine from its upstream, never vendored. The project CLAUDE.md rules win over any of them."
+  },
+  "skills": [
+    {
+      "name": "accessibility",
+      "purpose": "WCAG 2.2 audit and fixes: names, contrast, focus, keyboard, live regions, forms.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "addyosmani/web-quality-skills",
+      "path": "skills/accessibility",
+      "install": "npx --yes skills@latest add addyosmani/web-quality-skills --skill accessibility -g -a claude-code -y",
+      "update": "npx --yes skills@latest update accessibility -g -y",
+      "checkPath": "~/.claude/skills/accessibility",
+      "license": "MIT",
+      "usedBy": [
+        "kit-astro:web-builder",
+        "kit:auditor-ux"
+      ],
+      "note": "CLAUDE.md wins: its plain-HTML examples (raw <button>/<input>/<img>, inline <svg>, hex colors) become UI-kit wrappers (W7), tokens (W8) and the safe-image wrapper (W13); touch targets are at least 44 px (W9), not its 24 px minimum."
+    },
+    {
+      "name": "seo",
+      "purpose": "Technical and on-page SEO: meta tags, canonical, robots, sitemap, JSON-LD, hreflang.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "AgriciDaniel/claude-seo",
+      "path": null,
+      "install": "npx --yes skills@latest add AgriciDaniel/claude-seo --skill seo -g -a claude-code -y",
+      "update": "npx --yes skills@latest update seo -g -y",
+      "checkPath": "~/.claude/skills/seo",
+      "license": "MIT",
+      "usedBy": [
+        "kit-astro:web-builder",
+        "kit:auditor-ux"
+      ],
+      "note": "The user's installed seo skill (comprehensive audits: technical SEO, Core Web Vitals, schema, E-E-A-T). Chosen over addyosmani/web-quality-skills' seo to avoid a name clash in ~/.claude/skills/seo. Kit rule WA6 wins on conflict."
+    },
+    {
+      "name": "tailwind-design-system",
+      "purpose": "Tailwind v4 design systems: @theme tokens, token hierarchy, component variants, responsive and dark mode patterns.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "wshobson/agents",
+      "path": "plugins/frontend-mobile-development/skills/tailwind-design-system",
+      "install": "npx --yes skills@latest add wshobson/agents --skill tailwind-design-system -g -a claude-code -y",
+      "update": "npx --yes skills@latest update tailwind-design-system -g -y",
+      "checkPath": "~/.claude/skills/tailwind-design-system",
+      "license": "MIT",
+      "usedBy": [
+        "kit-astro:web-builder",
+        "kit:auditor-ux"
+      ],
+      "note": "CLAUDE.md wins: components are HeroUI v3 through wrappers (WA8, W7), not Radix Slot + CVA; the theme is not a React Context with localStorage (WA3 stores, W3, WA4 re-applies the theme on astro:after-swap)."
+    },
+    {
+      "name": "tailwind-v4-best-practices",
+      "purpose": "Tailwind CSS v4 code: @theme configuration, semantic utilities, OKLCH tokens, v3 to v4 migration.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "jenishshrestha/ai-skills",
+      "path": "skills/tailwind-v4-best-practices",
+      "install": "npx --yes skills@latest add jenishshrestha/ai-skills --skill tailwind-v4-best-practices -g -a claude-code -y",
+      "update": "npx --yes skills@latest update tailwind-v4-best-practices -g -y",
+      "checkPath": "~/.claude/skills/tailwind-v4-best-practices",
+      "license": "none (all rights reserved)",
+      "usedBy": [
+        "kit-astro:web-builder"
+      ],
+      "note": "No license: cannot be vendored, install it from upstream."
+    },
+    {
+      "name": "zustand",
+      "purpose": "Zustand stores: state shape, actions, slices, selectors.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "lobehub/lobehub",
+      "path": ".agents/skills/zustand",
+      "install": "npx --yes skills@latest add lobehub/lobehub --skill zustand -g -a claude-code -y",
+      "update": "npx --yes skills@latest update zustand -g -y",
+      "checkPath": "~/.claude/skills/zustand",
+      "license": "LobeHub Community License (Apache-2.0 plus conditions; derivative works need a commercial license)",
+      "usedBy": [
+        "kit-astro:web-builder"
+      ],
+      "note": "It describes LobeHub's own store conventions; the store patterns of kit-astro:astro-setup and WA3 win. The install clones the whole lobehub repository, so it is slow."
+    },
+    {
+      "name": "turborepo-monorepo",
+      "purpose": "Turborepo workspaces: turbo.json tasks, caching, filters, CI pipelines for apps/* monorepos.",
+      "useWhen": {},
+      "source": "giuseppe-trisciuoglio/developer-kit",
+      "path": "plugins/developer-kit-typescript/skills/turborepo-monorepo",
+      "install": "npx --yes skills@latest add giuseppe-trisciuoglio/developer-kit --skill turborepo-monorepo -g -a claude-code -y",
+      "update": "npx --yes skills@latest update turborepo-monorepo -g -y",
+      "checkPath": "~/.claude/skills/turborepo-monorepo",
+      "license": "MIT",
+      "usedBy": [
+        "kit-nestjs:api-builder",
+        "kit-astro:web-builder",
+        "kit-expo:mobile-builder"
+      ],
+      "note": "Offer it only when the repository is (or will be) a Turborepo monorepo. CLAUDE.md wins: its NestJS reference sets up Jest; the kit uses Vitest (AN13, testRunner)."
+    },
+    {
+      "name": "impeccable",
+      "purpose": "Distinctive, production-grade UI: design context, typography, color, layout, motion, critique and polish commands.",
+      "useWhen": {
+        "kind": [
+          "web",
+          "mobile"
+        ]
+      },
+      "source": "pbakaus/impeccable",
+      "path": ".agents/skills/impeccable (one build per harness; the CLI picks one)",
+      "install": "npx --yes skills@latest add pbakaus/impeccable --skill impeccable -g -a claude-code -y",
+      "update": "npx --yes skills@latest update impeccable -g -y",
+      "checkPath": "~/.claude/skills/impeccable",
+      "license": "Apache-2.0 (NOTICE: builds on Anthropic's frontend-design skill)",
+      "usedBy": [
+        "kit-design:brand-reference",
+        "kit-astro:web-builder",
+        "kit:auditor-ux"
+      ],
+      "note": "Upstream's own installer (`npx impeccable install --providers=claude --scope=global`, update `npx impeccable update`) also adds hooks to the current project; the skills CLI command only installs the skill. Copies made by hand (not in ~/.agents/.skill-lock.json) are not updated: run install once so update can track it. Brand values live in kit.json `brand` (docs/brand.md), not in a CLAUDE.md design-context section."
+    },
+    {
+      "name": "emil-design-eng",
+      "purpose": "Emil Kowalski's design engineering: UI polish, component feel, animation decisions, easing and timing.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "emilkowalski/skills",
+      "path": "skills/emil-design-eng",
+      "install": "npx --yes skills@latest add emilkowalski/skills --skill emil-design-eng -g -a claude-code -y",
+      "update": "npx --yes skills@latest update emil-design-eng -g -y",
+      "checkPath": "~/.claude/skills/emil-design-eng",
+      "license": "MIT (LICENSE added upstream on 2026-06-29)",
+      "usedBy": [
+        "kit-design:brand-reference",
+        "kit-astro:web-builder",
+        "kit:auditor-ux"
+      ],
+      "note": "Copies made by hand are not updated: run install once so update can track it."
+    },
+    {
+      "name": "design-taste-frontend",
+      "purpose": "taste-skill v2: art direction and an anti-slop house style for public web pages (landing, marketing, portfolio), with a browser-based inspector.",
+      "useWhen": {
+        "kind": "web"
+      },
+      "source": "Leonxlnx/taste-skill",
+      "path": "skills/taste-skill",
+      "install": "npx --yes skills@latest add Leonxlnx/taste-skill --skill design-taste-frontend -g -a claude-code -y",
+      "update": "npx --yes skills@latest update design-taste-frontend -g -y",
+      "checkPath": "~/.claude/skills/design-taste-frontend",
+      "license": "MIT (LICENSE added upstream on 2026-04-28)",
+      "usedBy": [
+        "kit-design:brand-reference",
+        "kit-astro:web-builder",
+        "kit:auditor-ux"
+      ],
+      "note": "Known by its folder name taste-skill. v2 (2026-10-11) is for public pages, not app screens; its scripts need Node 22+ and Chrome, Edge or Chromium and write to .taste-skill/. A hand-made copy under its folder name (~/.claude/skills/taste-skill) declares the same skill name: remove it after installing. CLAUDE.md wins: its token sheet goes into the single global CSS @theme (W8, WA9), not a second stylesheet."
+    },
+    {
+      "name": "design-tokens",
+      "purpose": "Generate a token set from an aesthetic direction: semantic colors for light and dark, spacing, type ramp, radii, shadows, motion.",
+      "useWhen": {
+        "kind": [
+          "web",
+          "mobile"
+        ]
+      },
+      "source": "julianoczkowski/designer-skills",
+      "path": "design-tokens",
+      "install": "npx --yes skills@latest add julianoczkowski/designer-skills --skill design-tokens -g -a claude-code -y",
+      "update": "npx --yes skills@latest update design-tokens -g -y",
+      "checkPath": "~/.claude/skills/design-tokens",
+      "license": "Apache-2.0",
+      "usedBy": [
+        "kit-design:brand-reference",
+        "kit:auditor-ux"
+      ],
+      "note": "CLAUDE.md wins: Tailwind v4 tokens live in the global CSS @theme, never in tailwind.config (WA9). It refers to sibling skills of its repo (design-brief, frontend-design) that the kit does not require."
+    },
+    {
+      "name": "expo-router",
+      "purpose": "Expo Router: file-based routes, layouts, native stacks and tabs, modals and form sheets, headers, search.",
+      "useWhen": {
+        "kind": "mobile",
+        "stack": "expo"
+      },
+      "source": "expo/skills",
+      "path": "plugins/expo/skills/expo-router",
+      "install": "npx --yes skills@latest add expo/skills --skill expo-router -g -a claude-code -y",
+      "update": "npx --yes skills@latest update expo-router -g -y",
+      "checkPath": "~/.claude/skills/expo-router",
+      "license": "MIT (650 Industries, Inc.)",
+      "usedBy": [
+        "kit-expo:mobile-builder"
+      ],
+      "note": "CLAUDE.md wins (ME1: routes are thin)."
+    },
+    {
+      "name": "expo-react-native-performance",
+      "purpose": "Expo / React Native performance: lists, images, re-renders, animations, memory, startup.",
+      "useWhen": {
+        "kind": "mobile",
+        "stack": "expo"
+      },
+      "source": "pproenca/dot-skills",
+      "path": "skills/.experimental/expo-react-native-performance",
+      "install": "npx --yes skills@latest add pproenca/dot-skills --skill expo-react-native-performance -g -a claude-code -y",
+      "update": "npx --yes skills@latest update expo-react-native-performance -g -y",
+      "checkPath": "~/.claude/skills/expo-react-native-performance",
+      "license": "MIT",
+      "usedBy": [
+        "kit-expo:mobile-builder"
+      ],
+      "note": "CLAUDE.md wins: server state and caching stay in TanStack Query (M2), lists follow ME8."
+    },
+    {
+      "name": "prisma-nestjs-patterns",
+      "purpose": "Prisma with NestJS: PrismaService, atomic transactions and SELECT FOR UPDATE, repositories, N+1 and pagination, seeds, hand-written Prisma stubs.",
+      "useWhen": {
+        "kind": "api",
+        "stack": "nestjs"
+      },
+      "source": "davidcastagnetoa/skills",
+      "path": "skills/prisma-nestjs-patterns",
+      "install": "npx --yes skills@latest add davidcastagnetoa/skills --skill prisma-nestjs-patterns -g -a claude-code -y",
+      "update": "npx --yes skills@latest update prisma-nestjs-patterns -g -y",
+      "checkPath": "~/.claude/skills/prisma-nestjs-patterns",
+      "license": "none (all rights reserved)",
+      "usedBy": [
+        "kit-nestjs:api-builder"
+      ],
+      "note": "No license: cannot be vendored. Written in Spanish. kit-nestjs:nestjs-prisma and the AN rules win where they differ. Update overwrites local edits to the installed copy."
+    },
+    {
+      "name": "nestjs-clean-typescript",
+      "purpose": "Clean NestJS with TypeScript: SOLID, modular architecture, testing.",
+      "useWhen": {
+        "kind": "api",
+        "stack": "nestjs"
+      },
+      "optional": true,
+      "source": "mindrally/skills",
+      "path": "nestjs-clean-typescript",
+      "install": "npx --yes skills@latest add mindrally/skills --skill nestjs-clean-typescript -g -a claude-code -y",
+      "update": "npx --yes skills@latest update nestjs-clean-typescript -g -y",
+      "checkPath": "~/.claude/skills/nestjs-clean-typescript",
+      "license": "Apache-2.0",
+      "usedBy": [],
+      "note": "Optional: superseded by kit-nestjs:nestjs-prisma. Upstream is a short generic guide. Update overwrites local edits to the installed copy."
+    }
+  ]
+}

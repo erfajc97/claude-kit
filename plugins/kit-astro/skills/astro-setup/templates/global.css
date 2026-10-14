@@ -1,0 +1,130 @@
+/*
+ * Design tokens (W8). The ONLY file with literal colors. Components use the generated
+ * utilities (bg-surface, text-fg, text-muted, border-border, bg-brand-500, bg-accent...).
+ * The values below are neutral placeholders: replace them with the project's palette
+ * (kit.json -> brand) and keep both the light and the dark set.
+ */
+@import "tailwindcss";
+@import "@heroui/styles";
+
+/* `dark:` utilities follow data-theme, which BaseLayout sets before the first paint. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* 1. Raw tokens. The brand scale is shared; semantic tokens change per theme. */
+:root {
+  --ui-brand-50: oklch(0.97 0 0);
+  --ui-brand-100: oklch(0.93 0 0);
+  --ui-brand-200: oklch(0.87 0 0);
+  --ui-brand-300: oklch(0.79 0 0);
+  --ui-brand-400: oklch(0.7 0 0);
+  --ui-brand-500: oklch(0.6 0 0);
+  --ui-brand-600: oklch(0.52 0 0);
+  --ui-brand-700: oklch(0.45 0 0);
+  --ui-brand-800: oklch(0.37 0 0);
+  --ui-brand-900: oklch(0.29 0 0);
+  --ui-brand-950: oklch(0.21 0 0);
+}
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --ui-canvas: oklch(0.985 0 0);
+  --ui-surface: oklch(1 0 0);
+  --ui-surface-raised: oklch(0.965 0 0);
+  --ui-fg: oklch(0.21 0 0);
+  --ui-muted: oklch(0.45 0 0);
+  --ui-border: oklch(0.9 0 0);
+  --ui-accent: var(--ui-brand-800);
+  --ui-on-accent: oklch(0.99 0 0);
+  --ui-success: oklch(0.52 0.13 150);
+  --ui-warning: oklch(0.6 0.13 75);
+  --ui-danger: oklch(0.55 0.19 27);
+  --ui-focus: var(--ui-brand-700);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ui-canvas: oklch(0.16 0 0);
+  --ui-surface: oklch(0.2 0 0);
+  --ui-surface-raised: oklch(0.25 0 0);
+  --ui-fg: oklch(0.96 0 0);
+  --ui-muted: oklch(0.72 0 0);
+  --ui-border: oklch(0.32 0 0);
+  --ui-accent: var(--ui-brand-200);
+  --ui-on-accent: oklch(0.18 0 0);
+  --ui-success: oklch(0.72 0.14 150);
+  --ui-warning: oklch(0.8 0.13 80);
+  --ui-danger: oklch(0.7 0.17 25);
+  --ui-focus: var(--ui-brand-300);
+}
+
+/* 2. Tailwind utilities read the raw tokens, so they switch with the theme. */
+@theme inline {
+  --color-canvas: var(--ui-canvas);
+  --color-surface: var(--ui-surface);
+  --color-surface-raised: var(--ui-surface-raised);
+  --color-fg: var(--ui-fg);
+  --color-muted: var(--ui-muted);
+  --color-border: var(--ui-border);
+  --color-accent: var(--ui-accent);
+  --color-on-accent: var(--ui-on-accent);
+  --color-success: var(--ui-success);
+  --color-warning: var(--ui-warning);
+  --color-danger: var(--ui-danger);
+  --color-focus: var(--ui-focus);
+
+  --color-brand-50: var(--ui-brand-50);
+  --color-brand-100: var(--ui-brand-100);
+  --color-brand-200: var(--ui-brand-200);
+  --color-brand-300: var(--ui-brand-300);
+  --color-brand-400: var(--ui-brand-400);
+  --color-brand-500: var(--ui-brand-500);
+  --color-brand-600: var(--ui-brand-600);
+  --color-brand-700: var(--ui-brand-700);
+  --color-brand-800: var(--ui-brand-800);
+  --color-brand-900: var(--ui-brand-900);
+  --color-brand-950: var(--ui-brand-950);
+
+  --radius-field: 0.5rem;
+  --radius-card: 0.75rem;
+}
+
+/*
+ * 3. HeroUI v3 bridge (WA8): its components read their own variables. Unlayered, so these
+ * win over the library defaults in both themes.
+ */
+:root,
+[data-theme="light"],
+[data-theme="dark"] {
+  --background: var(--ui-canvas);
+  --foreground: var(--ui-fg);
+  --surface: var(--ui-surface);
+  --accent: var(--ui-accent);
+  --accent-foreground: var(--ui-on-accent);
+  --field-background: var(--ui-surface);
+  --field-foreground: var(--ui-fg);
+  --field-placeholder: var(--ui-muted);
+  --muted: var(--ui-muted);
+  --success: var(--ui-success);
+  --warning: var(--ui-warning);
+  --danger: var(--ui-danger);
+}
+
+@layer base {
+  html {
+    background-color: var(--ui-canvas);
+    color: var(--ui-fg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ui-focus);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}

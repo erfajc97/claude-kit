@@ -1,0 +1,17 @@
+{
+  "block": "addon-observability",
+  "version": 1,
+  "appliesTo": { "addon": "observability" },
+  "checks": [
+    {
+      "rule": "OB1",
+      "type": "forbidden-import",
+      "description": "Observability SDKs are imported only inside observability/adapters/",
+      "files": ["**/*.{ts,tsx,js,jsx,mjs,cjs,astro}"],
+      "exclude": ["**/observability/adapters/**", "**/observability/**/__tests__/**", "**/*.config.*", "**/sentry.*.config.*"],
+      "specifiers": ["^@sentry/", "^posthog-(js|node)", "^@logtail/", "^@datadog/", "^mixpanel"],
+      "severity": "HIGH",
+      "fix": "call the facade (captureError, trackEvent, ErrorReporter, AnalyticsService) instead"
+    }
+  ]
+}

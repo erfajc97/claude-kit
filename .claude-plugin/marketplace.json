@@ -1,0 +1,34 @@
+{
+  "name": "erfa-kit",
+  "owner": { "name": "erfajc97" },
+  "metadata": {
+    "description": "Engineering harness: non-negotiable rules, builders and auditors for NestJS, Astro/React and Expo projects, new or existing."
+  },
+  "plugins": [
+    {
+      "name": "kit",
+      "source": "./plugins/kit",
+      "description": "Core: rule blocks, auditors (rules, tests, security, challenge, ux, judgment, senior) and the kickoff / adopt / audit / phase-done workflow."
+    },
+    {
+      "name": "kit-nestjs",
+      "source": "./plugins/kit-nestjs",
+      "description": "NestJS + Prisma API: builder agent and stack knowledge skills."
+    },
+    {
+      "name": "kit-astro",
+      "source": "./plugins/kit-astro",
+      "description": "Astro + React islands web: builder agent, Playwright QA agent and stack knowledge skills."
+    },
+    {
+      "name": "kit-expo",
+      "source": "./plugins/kit-expo",
+      "description": "Expo React Native mobile: builder agent."
+    },
+    {
+      "name": "kit-design",
+      "source": "./plugins/kit-design",
+      "description": "Design and branding skills: build a brand reference and a distinctive UI when a project has none."
+    }
+  ]
+}

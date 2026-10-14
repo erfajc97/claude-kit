@@ -1,0 +1,122 @@
+---
+/**
+ * HTML shell of every page: SEO metadata (WA6), theme before paint (W8), ClientRouter (WA4).
+ * Every string arrives translated: pages call getT(locale) in their frontmatter (W12).
+ */
+import { ClientRouter } from 'astro:transitions'
+import '@/styles/global.css'
+import { DEFAULT_LOCALE, type Locale } from '@/app/i18n'
+
+type JsonLd = Record<string, unknown>
+
+export interface Props {
+  /** Translated, at most 60 characters. */
+  title: string
+  /** Translated, 100 to 155 characters. */
+  description: string
+  locale?: Locale
+  /** Path of the canonical URL; defaults to the current path. */
+  canonicalPath?: string
+  /** Absolute URL or root-relative path of a 1200x630 image. */
+  ogImage?: string
+  ogType?: 'website' | 'article' | 'product'
+  /** Same page in other locales; adds hreflang links plus x-default. */
+  alternates?: ReadonlyArray<{ locale: Locale; path: string }>
+  jsonLd?: JsonLd | ReadonlyArray<JsonLd>
+  /** Private, utility and error pages. */
+  noindex?: boolean
+}
+
+const {
+  title,
+  description,
+  locale = DEFAULT_LOCALE,
+  canonicalPath = Astro.url.pathname,
+  ogImage = '/og-default.png',
+  ogType = 'website',
+  alternates = [],
+  jsonLd,
+  noindex = false,
+} = Astro.props
+
+const siteUrl = Astro.site ?? Astro.url
+const canonical = new URL(canonicalPath, siteUrl).href
+const ogImageUrl = new URL(ogImage, siteUrl).href
+const defaultAlternate = alternates.find((alternate) => alternate.locale === DEFAULT_LOCALE)
+// JSON-LD is data, not markup: escape "<" so a value can never close the script tag (W14).
+const jsonLdHtml = jsonLd ? JSON.stringify(jsonLd).replace(/</g, '\\u003c') : null
+
+if (import.meta.env.DEV) {
+  if (title.length > 60) console.warn(`[seo] title longer than 60 characters on ${Astro.url.pathname}`)
+  if (description.length < 100 || description.length > 155) {
+    console.warn(`[seo] description outside 100-155 characters on ${Astro.url.pathname}`)
+  }
+}
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {alternates.map((alternate) => (
+      <link rel="alternate" hreflang={alternate.locale} href={new URL(alternate.path, siteUrl).href} />
+    ))}
+    {defaultAlternate && (
+      <link rel="alternate" hreflang="x-default" href={new URL(defaultAlternate.path, siteUrl).href} />
+    )}
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={locale.replace('-', '_')} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {jsonLdHtml && <script type="application/ld+json" set:html={jsonLdHtml} />}
+
+    <!-- Theme before first paint; same storage key as the theme toggle. -->
+    <script is:inline>
+      (() => {
+        const root = document.documentElement
+        const apply = () => {
+          let stored = null
+          try {
+            stored = localStorage.getItem('theme')
+          } catch {
+            // Storage blocked (private mode, browser policy): fall back to the OS preference.
+          }
+          const theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+          root.dataset.theme = theme
+          root.classList.toggle('dark', theme === 'dark')
+          root.style.colorScheme = theme
+        }
+        apply()
+        // ClientRouter replaces the <html> attributes on every navigation (WA4).
+        document.addEventListener('astro:after-swap', apply)
+      })()
+    </script>
+
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body class="flex min-h-dvh flex-col bg-canvas text-fg antialiased">
+    <!-- No providers here: each island mounts AppProviders itself (WA3). -->
+    <slot />
+  </body>
+</html>

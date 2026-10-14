@@ -1,0 +1,17 @@
+{
+  "description": "claude-kit audit seal (opt-in): blocks git commit until /kit:audit passed on the staged files, only in projects whose .claude/kit.json has \"seal\": true. A silent no-op everywhere else.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/seal-guard.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

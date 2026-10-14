@@ -1,0 +1,54 @@
+{
+  "block": "api-common",
+  "version": 1,
+  "appliesTo": { "kind": "api", "stacks": "*" },
+  "checks": [
+    {
+      "rule": "A1",
+      "type": "forbidden-import",
+      "description": "core/ never imports a domain module",
+      "files": ["**/core/**"],
+      "imports": ["**/modules/**", "**/features/**"],
+      "specifiers": ["^[@~#][\\w-]*/(modules|features)/"],
+      "severity": "HIGH",
+      "fix": "invert the dependency: the module imports core (or core defines a port the module implements)"
+    },
+    {
+      "rule": "A1",
+      "type": "forbidden-import",
+      "description": "A controller/router never imports a repository",
+      "files": ["**/*.controller.ts", "**/*.router.ts", "**/router.py", "**/routers/**"],
+      "imports": ["**/*.repository", "**/*.repository.*", "**/repository", "**/repository.py", "**/repositories/**"],
+      "severity": "HIGH",
+      "fix": "call the service; only the service talks to the repository"
+    },
+    {
+      "rule": "A1",
+      "type": "no-cross-import",
+      "description": "A module never imports another module's repository",
+      "unit": "**/modules/*",
+      "onlyTargets": ["**/*.repository", "**/*.repository.*", "**/repository", "**/repositories/**"],
+      "severity": "HIGH",
+      "fix": "use the other module's exported service, or move the shared query to core"
+    },
+    {
+      "rule": "A1",
+      "type": "no-cross-import",
+      "description": "A feature never imports another feature's repository",
+      "unit": "**/features/*",
+      "onlyTargets": ["**/*.repository", "**/*.repository.*", "**/repository", "**/repository.py", "**/repositories/**"],
+      "severity": "HIGH",
+      "fix": "use the other feature's service, or move the shared query to core"
+    },
+    {
+      "rule": "A8",
+      "type": "forbidden-content",
+      "description": "Only the config module reads the environment",
+      "files": ["**/*.{ts,js,mjs,cjs,py}"],
+      "exclude": ["**/config/**", "**/*.config.*", "**/__tests__/**", "**/*.{test,spec}.*", "**/*.int-spec.*", "**/test/**", "**/tests/**", "**/scripts/**", "**/prisma/**", "**/seed*", "**/conftest.py", "**/alembic/**", "**/migrations/**"],
+      "pattern": "\\bprocess\\.env\\b|\\bos\\.environ\\b|\\bos\\.getenv\\(",
+      "severity": "HIGH",
+      "fix": "add the variable to the env schema and inject the typed settings"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "block": "web-astro",
+  "version": 1,
+  "appliesTo": { "kind": "web", "stacks": ["astro"] },
+  "checks": [
+    {
+      "rule": "WA1",
+      "type": "forbidden-path",
+      "description": "Pages are .astro (or endpoints), never React files",
+      "files": ["src/pages/**/*.{tsx,jsx}"],
+      "severity": "HIGH",
+      "fix": "move the React code to a feature root in src/app/features/ and mount it from the .astro page"
+    },
+    {
+      "rule": "WA1",
+      "type": "forbidden-path",
+      "description": "Layouts are .astro",
+      "files": ["src/layouts/**/*.{tsx,jsx}"],
+      "severity": "HIGH",
+      "fix": "write the layout as .astro; interactive parts become islands"
+    },
+    {
+      "rule": "WA7",
+      "type": "forbidden-content",
+      "description": "Configuration comes from astro:env, not import.meta.env",
+      "files": ["src/**/*.{ts,tsx,astro}"],
+      "exclude": ["**/__tests__/**", "**/*.{test,spec}.*", "src/env.d.ts"],
+      "pattern": "import\\.meta\\.env\\.(?!(DEV|PROD|MODE|SSR|BASE_URL|SITE)\\b)[A-Z_][A-Z0-9_]*",
+      "severity": "HIGH",
+      "fix": "declare the variable with envField in astro.config and import it from astro:env/client or astro:env/server"
+    },
+    {
+      "rule": "WA8",
+      "type": "forbidden-import",
+      "description": "HeroUI v3 only (no v2 theme package, no NextUI)",
+      "files": ["src/**"],
+      "specifiers": ["^@heroui/theme$", "^@nextui-org/"],
+      "severity": "HIGH",
+      "fix": "import from @heroui/react and map tokens in the global CSS"
+    },
+    {
+      "rule": "WA8",
+      "type": "forbidden-content",
+      "description": "No HeroUIProvider and no HeroUI <Form>",
+      "files": ["src/**/*.tsx"],
+      "exclude": ["**/__tests__/**", "**/*.{test,spec}.tsx"],
+      "pattern": "\\bHeroUIProvider\\b|<Form[\\s>]",
+      "severity": "HIGH",
+      "fix": "v3 needs no provider; forms use a native <form noValidate>"
+    }
+  ]
+}

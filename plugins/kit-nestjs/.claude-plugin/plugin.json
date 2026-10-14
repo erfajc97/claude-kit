@@ -1,0 +1,6 @@
+{
+  "name": "kit-nestjs",
+  "version": "0.1.0",
+  "description": "NestJS + Prisma API builder and stack knowledge.",
+  "author": { "name": "erfajc97" }
+}

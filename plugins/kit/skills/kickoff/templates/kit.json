@@ -1,0 +1,33 @@
+{
+  "kitVersion": "{{kit_version}}",
+  "project": "{{project}}",
+  "rigor": "standard",
+  "locale": { "code": "en", "ui": "es-AR" },
+  "requirements": {
+    "source": "docs/prd.md",
+    "idScheme": "R-12",
+    "checklist": "docs/requirements-checklist.md"
+  },
+  "tracking": "plan",
+  "commitStyle": "tags",
+  "coverage": 90,
+  "testRunner": { "api": "vitest", "web": "vitest", "mobile": "vitest" },
+  "scopes": {
+    "api": { "kind": "api", "stack": "nestjs", "path": "apps/api", "mode": "enforce", "validator": "nestjs-zod" },
+    "web": { "kind": "web", "stack": "astro", "path": "apps/web", "mode": "enforce" },
+    "mobile": { "kind": "mobile", "stack": "expo", "path": "apps/mobile", "mode": "enforce" }
+  },
+  "addons": [],
+  "brand": "docs/brand.md",
+  "commands": {
+    "api": { "lint": "", "typecheck": "", "test": "", "integration": "", "build": "" },
+    "web": { "lint": "", "typecheck": "", "test": "", "build": "" },
+    "mobile": { "lint": "", "typecheck": "", "test": "", "build": "n/a" },
+    "e2e": ""
+  },
+  "audit": {
+    "chain": ["rules", "tests", "security", "ux", "challenge"],
+    "milestone": ["judgment", "senior"]
+  },
+  "seal": false
+}

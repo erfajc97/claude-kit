@@ -1,0 +1,111 @@
+{
+  "block": "web-common",
+  "version": 1,
+  "appliesTo": { "kind": "web", "stacks": "*" },
+  "checks": [
+    {
+      "rule": "W1",
+      "type": "layout",
+      "description": "A feature root holds ONE entity-named root, types/data/schema and the layer folders",
+      "unit": "src/app/features/*",
+      "allowFiles": ["^[A-Z][A-Za-z0-9]*\\.tsx$", "^types\\.ts$", "^data\\.ts$", "^schema\\.ts$"],
+      "maxMatching": { "pattern": "^[A-Z][A-Za-z0-9]*\\.tsx$", "max": 1 },
+      "allowDirs": ["components", "hooks", "mutations", "services", "helpers", "__tests__"],
+      "severity": "HIGH",
+      "fix": "move the file into its layer folder; a second root becomes a component or its own feature"
+    },
+    {
+      "rule": "W1",
+      "type": "no-cross-import",
+      "description": "No imports between features",
+      "unit": "src/app/features/*",
+      "severity": "HIGH",
+      "fix": "move what both need up to src/app/ (helpers, tanstack-queries, components/UI)"
+    },
+    {
+      "rule": "W1",
+      "type": "names",
+      "description": "components/ holds one PascalCase component per .tsx file",
+      "files": ["src/app/features/*/components/**"],
+      "pattern": "^[A-Z][A-Za-z0-9]*\\.tsx$",
+      "severity": "MEDIUM",
+      "fix": "rename to the component name (PascalCase.tsx); move non-component code to helpers/"
+    },
+    {
+      "rule": "W1",
+      "type": "names",
+      "description": "hooks/ and mutations/ files are use* hooks",
+      "files": ["src/app/features/*/hooks/**", "src/app/features/*/mutations/**"],
+      "pattern": "^use[A-Z][A-Za-z0-9]*\\.tsx?$",
+      "severity": "MEDIUM",
+      "fix": "name the file after the hook it exports (useX.ts)"
+    },
+    {
+      "rule": "W1",
+      "type": "names",
+      "description": "services/ and helpers/ are plain .ts (no JSX)",
+      "files": ["src/app/features/*/services/**", "src/app/features/*/helpers/**"],
+      "pattern": "^[a-zA-Z][A-Za-z0-9.-]*\\.ts$",
+      "severity": "MEDIUM",
+      "fix": "a file with JSX is a component: move it to components/"
+    },
+    {
+      "rule": "W1",
+      "type": "names",
+      "description": "__tests__/ holds test files",
+      "files": ["src/app/features/*/__tests__/**"],
+      "pattern": "\\.(test|spec)\\.tsx?$",
+      "severity": "MEDIUM",
+      "fix": "rename to *.test.ts(x), or move helpers next to the code they help"
+    },
+    {
+      "rule": "W2",
+      "type": "forbidden-content",
+      "description": "Components are dumb: no effects, queries, mutations, HTTP, toasts or tracking",
+      "files": ["src/app/features/*/components/**/*.tsx"],
+      "pattern": "\\buseEffect\\(|\\buse(Query|Mutation|InfiniteQuery|SuspenseQuery)\\(|\\baxios\\b|\\bfetch\\(|\\btoast\\b|sonnerResponse|\\btrackEvent\\(",
+      "except": "setHydrated\\(true\\)",
+      "severity": "HIGH",
+      "fix": "move the logic to the feature's hook (or mutation) and pass the result as props"
+    },
+    {
+      "rule": "W4",
+      "type": "forbidden-content",
+      "description": "useMutation lives only in mutations/",
+      "files": ["src/**/*.{ts,tsx}"],
+      "exclude": ["**/mutations/**", "**/__tests__/**", "**/*.{test,spec}.*"],
+      "pattern": "\\buseMutation\\(",
+      "severity": "HIGH",
+      "fix": "create use<Action>Mutation in the feature's mutations/ and call it from the hook"
+    },
+    {
+      "rule": "W1",
+      "type": "forbidden-content",
+      "description": "HTTP calls live only in services/",
+      "files": ["src/app/features/**/*.{ts,tsx}"],
+      "exclude": ["**/services/**", "**/__tests__/**", "**/*.{test,spec}.*"],
+      "pattern": "\\b(axios|axiosInstance|apiClient|http)\\.(get|post|put|patch|delete|request)\\(|\\bfetch\\(",
+      "severity": "HIGH",
+      "fix": "add one function per endpoint in services/ and call it from the hook or mutation"
+    },
+    {
+      "rule": "W7",
+      "type": "forbidden-content",
+      "description": "No raw form or table controls outside the UI wrappers",
+      "files": ["src/**/*.tsx"],
+      "exclude": ["src/app/components/UI/**", "**/__tests__/**", "**/*.{test,spec}.tsx"],
+      "pattern": "<(button|input|select|textarea|table)[\\s>/]",
+      "severity": "HIGH",
+      "fix": "use the UI kit component or its wrapper in src/app/components/UI/"
+    },
+    {
+      "rule": "W7",
+      "type": "forbidden-content",
+      "description": "No inline <svg> in features",
+      "files": ["src/app/features/**/*.tsx"],
+      "pattern": "<svg[\\s>]",
+      "severity": "HIGH",
+      "fix": "one icon component per file in src/assets/svg/"
+    }
+  ]
+}

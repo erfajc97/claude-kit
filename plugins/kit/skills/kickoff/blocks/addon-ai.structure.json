@@ -1,0 +1,17 @@
+{
+  "block": "addon-ai",
+  "version": 1,
+  "appliesTo": { "addon": "ai" },
+  "checks": [
+    {
+      "rule": "AI1",
+      "type": "forbidden-import",
+      "description": "AI provider SDKs are imported only inside the AI module's providers/",
+      "files": ["**/*.{ts,tsx,js,jsx,mjs,cjs,py}"],
+      "exclude": ["**/ai/providers/**"],
+      "specifiers": ["^openai($|/)", "^@anthropic-ai/sdk", "^@google/genai", "^@google/generative-ai", "^@mistralai/", "^groq-sdk", "^cohere-ai", "^ollama($|/)", "^anthropic$", "^google\\.genai", "^mistralai"],
+      "severity": "BLOCKER",
+      "fix": "call a named task of the AI service; only ai/providers/* talks to a vendor"
+    }
+  ]
+}

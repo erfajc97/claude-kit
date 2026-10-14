@@ -1,0 +1,102 @@
+{
+  "block": "api-nestjs",
+  "version": 1,
+  "appliesTo": { "kind": "api", "stacks": ["nestjs"] },
+  "checks": [
+    {
+      "rule": "AN1",
+      "type": "layout",
+      "description": "A module root holds only its layer files and layer folders",
+      "unit": "src/modules/*",
+      "allowFiles": ["^[a-z0-9][a-z0-9-]*\\.(module|controller|service|repository)\\.ts$"],
+      "allowDirs": ["dto", "jobs", "helpers", "__tests__", "providers"],
+      "severity": "HIGH",
+      "fix": "move the file into dto/, jobs/, helpers/ or __tests__/ (providers/ only for adapters behind a port, e.g. the AI module)"
+    },
+    {
+      "rule": "AN1",
+      "type": "forbidden-content",
+      "description": "Controllers are thin: no PrismaService or transactions",
+      "files": ["src/**/*.controller.ts"],
+      "pattern": "\\bPrismaService\\b|\\$transaction\\b",
+      "severity": "HIGH",
+      "fix": "move the data access and the transaction into the service"
+    },
+    {
+      "rule": "AN2",
+      "type": "forbidden-content",
+      "description": "Every body and query is a DTO class imported as a value",
+      "files": ["src/**/*.controller.ts"],
+      "pattern": "@Body\\(\\)\\s+\\w+\\s*:\\s*(any\\b|Record\\b|\\{)|@Body\\(\\s*['\"]|@Query\\(\\s*['\"]|^\\s*import\\s+type\\s+[^;]*Dto\\b",
+      "severity": "HIGH",
+      "fix": "declare a DTO class in its *.dto.ts and import it as a value"
+    },
+    {
+      "rule": "AN2",
+      "type": "names",
+      "description": "DTO files are named *.dto.ts",
+      "files": ["src/modules/*/dto/**"],
+      "pattern": "^([a-z0-9][a-z0-9-]*\\.dto|index)\\.ts$",
+      "severity": "MEDIUM",
+      "fix": "rename to <name>.dto.ts"
+    },
+    {
+      "rule": "AN3",
+      "type": "forbidden-content",
+      "description": "Business errors are AppHttpException with a catalog key",
+      "files": ["src/**/*.ts"],
+      "exclude": ["src/core/errors/**", "**/__tests__/**", "**/*.spec.ts"],
+      "pattern": "new\\s+(BadRequest|NotFound|Forbidden|Unauthorized|Conflict|InternalServerError)Exception\\(",
+      "severity": "HIGH",
+      "fix": "throw new AppHttpException('KEY') with the key from the error catalog"
+    },
+    {
+      "rule": "AN4",
+      "type": "forbidden-content",
+      "description": "App code injects PrismaService, never new PrismaClient()",
+      "files": ["src/**/*.ts"],
+      "exclude": ["src/core/database/**", "**/__tests__/**", "**/*.spec.ts"],
+      "pattern": "new\\s+PrismaClient\\s*\\(",
+      "severity": "HIGH",
+      "fix": "inject PrismaService"
+    },
+    {
+      "rule": "AN11",
+      "type": "forbidden-content",
+      "description": "Queue processors live in a module's jobs/ folder",
+      "files": ["src/**/*.ts"],
+      "exclude": ["src/modules/*/jobs/**", "**/__tests__/**", "**/*.spec.ts"],
+      "pattern": "@Processor\\(",
+      "severity": "HIGH",
+      "fix": "move the processor to modules/<domain>/jobs/ and register it in the worker module"
+    },
+    {
+      "rule": "AN12",
+      "type": "forbidden-import",
+      "description": "Only core/storage imports the storage SDK",
+      "files": ["src/**"],
+      "exclude": ["src/core/storage/**"],
+      "specifiers": ["^@aws-sdk/"],
+      "severity": "HIGH",
+      "fix": "go through StorageService"
+    },
+    {
+      "rule": "AN13",
+      "type": "forbidden-import",
+      "description": "Service unit specs never use @nestjs/testing",
+      "files": ["src/**/__tests__/**"],
+      "specifiers": ["^@nestjs/testing$"],
+      "severity": "HIGH",
+      "fix": "instantiate the service directly with hand-written stubs"
+    },
+    {
+      "rule": "AN13",
+      "type": "names",
+      "description": "Unit specs are named *.spec.ts",
+      "files": ["src/**/__tests__/**"],
+      "pattern": "\\.spec\\.ts$",
+      "severity": "MEDIUM",
+      "fix": "rename to <name>.spec.ts (fixtures go next to the spec with a .spec.ts importer)"
+    }
+  ]
+}
