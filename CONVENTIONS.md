@@ -32,6 +32,7 @@ Blocks live in `plugins/kit/skills/kickoff/blocks/<block>.md`:
 | `general.md` | `G` | every project |
 | `api-common.md` | `A` | any backend |
 | `api-nestjs.md` | `AN` | NestJS + Prisma |
+| `api-fastapi.md` | `AF` | FastAPI + SQLAlchemy 2 + Alembic (Python, uv) |
 | `web-common.md` | `W` | any web front-end |
 | `web-astro.md` | `WA` | Astro + React islands |
 | `mobile-common.md` | `M` | any mobile app |
@@ -41,7 +42,7 @@ Blocks live in `plugins/kit/skills/kickoff/blocks/<block>.md`:
 | `addon-observability.md` | `OB` | error tracking / analytics / uptime adapters (optional) |
 | `addon-ai.md` | `AI` | LLM providers behind one service (optional) |
 
-(`addon-money.md` uses prefix `MO`.) Future blocks: `api-fastapi.md` (`AF`), `web-next.md` (`WN`).
+(`addon-money.md` uses prefix `MO`.) Future blocks: `web-next.md` (`WN`).
 
 - IDs are **stable and append-only**: `G1, G2…`, `AN1, AN2…`. Never renumber; a retired
   rule stays with `(retired)` in its title. Auditors cite IDs exactly.
@@ -282,9 +283,15 @@ Builder report:
 
 ## 7. Defaults
 
-- Test runner: Vitest (web, mobile and NestJS). Jest only when a project already uses it.
+- Package manager: pnpm for every JavaScript package (G19: pinned `packageManager`, frozen
+  lockfile, `allowBuilds`, `minimumReleaseAge`); Python through uv (`uv.lock`, `uv sync
+  --locked`, AF11).
+- Test runner: Vitest (web, mobile and NestJS); pytest for FastAPI. Jest only when a
+  project already uses it.
 - Web: Astro + React islands, TanStack Query, HeroUI, Tailwind v4, react-hook-form + zod.
-- API: NestJS + Prisma, zod DTOs (nestjs-zod), hand-written migrations.
+- API: stack `nestjs` (default: NestJS + Prisma, zod DTOs via nestjs-zod, hand-written
+  migrations) or `fastapi` (FastAPI + SQLAlchemy 2 async + Pydantic v2, hand-written Alembic
+  migrations, `AF`).
 - Mobile: Expo + Expo Router, uniwind + Tailwind v4 (tokens in `global.css` `@theme`), TanStack Query, SecureStore for secrets, Vitest.
 - E2E: Playwright (web).
 - Machine notes (Windows, rtk proxy) are NOT part of the kit; they belong in the user's

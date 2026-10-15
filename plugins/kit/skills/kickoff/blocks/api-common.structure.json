@@ -8,6 +8,7 @@
       "type": "forbidden-import",
       "description": "core/ never imports a domain module",
       "files": ["**/core/**"],
+      "exclude": ["tests/**", "**/tests/**", "test/**", "**/test/**", "**/__tests__/**", "**/*.{test,spec}.*", "**/*.int-spec.*"],
       "imports": ["**/modules/**", "**/features/**"],
       "specifiers": ["^[@~#][\\w-]*/(modules|features)/"],
       "severity": "HIGH",

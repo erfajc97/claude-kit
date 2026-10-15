@@ -158,4 +158,38 @@ W16. **Tooling green and a clean console.** `{{commands.web.lint}}` (ESLint with
     touched page and its dialogs. Why: runtime warnings are invisible to type checkers and
     linters. Check: run each command and read its exit code; open the page and its dialogs
     and read the console.
+
+W17. **List state lives in the URL, and every way back restores it.** A list's filters,
+    sort and page are query parameters, read and written by ONE parser and serialiser per
+    list: the link can be shared, a reload keeps it and the browser's Back walks through
+    it. Each list remembers its canonical query for the current tab in `sessionStorage`
+    (one key per list), passed through the list's own parser both when it is written AND
+    when it is read, so only valid filters ever reach a link. It records only while the
+    address is the list itself, because a list that mounts during Back → Forward would
+    otherwise overwrite the memory with a stale query. Every in-app way back to the list —
+    back link, breadcrumb, not-found action, redirect after a delete — is built from that
+    memory by one helper; server-rendered links stay the plain list (without JavaScript,
+    or with an empty memory, they still work) and the client only swaps their `href`.
+    Section and navigation links always open a fresh list. The `Referer` header and
+    `history.back()` are never the source of the way back: after a deep link, a new tab
+    or another site they lead out of the app or nowhere. Why: a user who narrowed 200 rows
+    to 3, opened one and came back to page 1 of everything stops trusting the list. Check:
+    a unit test of the helper covers an invalid stored query, a write while the address is
+    not the list, and an empty memory; an E2E test filters, opens an item, goes Back →
+    Forward, then uses the in-app back link and lands on the filtered list; Grep -i
+    `history\.back\(|document\.referrer|headers\.get\(['"]referer` in the web scopes → none.
+
+W18. **Values that must come from a lookup are picked, not typed.** A field whose value must
+    exist in a provider or a catalog — an address from a geocoder, a catalog item, a user
+    from a directory — is saved only with the structured value the user PICKED from the
+    lookup (its id and the fields the API needs), never with the typed text alone, and the
+    API validates the same. An edit keeps the value the record opened with: an untouched
+    field saves without a new lookup, and typing the saved label back restores the saved
+    structure. A provider outage blocks only a new or changed value: the draft is kept, the
+    field shows the lookup's `unavailable` state (by code, W6) with a retry, and unchanged
+    values still save (A20). Why: typed text that looks like an address is how unroutable
+    deliveries and duplicate catalog items get in, and an outage must not cost the user
+    what they already wrote. Check: the form's tests cover create blocked without a pick,
+    a pick unblocking it, an unchanged edit passing, a changed edit blocked until a new
+    pick, and outage → draft kept → retry → pick.
 <!-- /kit:block web-common -->

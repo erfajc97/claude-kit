@@ -165,4 +165,23 @@ M16. **Numeric input on phones.** Amount and quantity fields parse locale input:
     is "no value" (not `0`), and out-of-range input is marked invalid, never corrected.
     Why: stripping the comma turns `5,50` into `550`. Check: parser specs with `5,50`,
     `5.50`, `1.234,56`, `1,234.56`, `""` and `abc`; Grep `\[\^\\d\.\]|\[\^0-9\.\]` → 0.
+
+M17. **Client state in Zustand, server state in TanStack Query.** The mobile twin of WA3
+    and W4. Server data follows M2 (read through the shared query hooks, written through
+    mutations) and is never copied into a store. Zustand holds only client state — UI
+    (open sheet, selected tab, draft filters), session flags and app settings — one store
+    per concern in the app's shared `stores/` folder (`use<Concern>Store`), each with its
+    spec (M15). Components and hooks read a store through a selector
+    (`useCartStore((s) => s.count)`; `useShallow` for several fields), never the whole
+    store, which re-renders the caller on every change. A persisted slice goes through
+    `persist` with an explicit storage adapter (`createJSONStorage(() => AsyncStorage)` or
+    the project's adapter), `partialize` to the fields that must survive a restart, and a
+    `version` (plus `migrate` when its shape changes). Secrets never go in a persisted
+    store: they live in the secure store (M4, ME2). Why: a whole-store subscription
+    re-renders every screen on every keystroke, and a server copy in a store is the stale
+    data the query already refetched. Check: Grep `\buse[A-Z]\w*Store\(\s*\)` in the
+    mobile scopes → 0; Grep `from ['"]zustand(/middleware)?['"]` outside `stores/` → 0
+    (`useShallow` may be imported anywhere); Grep the stores for
+    `useQuery|useMutation|fetch\(|axios|Service\.` → 0; every `partialize` keeps no token,
+    password or secret field (M4).
 <!-- /kit:block mobile-common -->

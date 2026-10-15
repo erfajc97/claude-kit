@@ -162,6 +162,68 @@ G18. **No silent failure.** Every `catch` handles the error, reports it, or says
      `catch\s*(\(\w*\))?\s*\{\s*\}`, `\.catch\(\(\)\s*=>\s*(\{\s*\}|undefined|null)\)`,
      `except(\s+\w+)?:\s*pass` and `\bvoid\s+\w+\(`.
 
+G19. **pnpm, locked down (supply chain).** Every JavaScript package installs with pnpm
+     ≥ 10.26 (the first version that reads `allowBuilds`, the only build allowlist pnpm 11
+     and later still read). The root `package.json` pins it exactly in `packageManager`
+     (`"pnpm@<x.y.z>"`) and every machine and CI job runs that version: pnpm switches to
+     the pin by itself (`pmOnFail: download`, the default from pnpm 11), or Corepack does
+     (`corepack enable`; bundled with Node.js only before 25, `npm i -g corepack` after).
+     `pnpm-lock.yaml` is committed and CI installs with `pnpm install --frozen-lockfile`.
+     Nobody runs `npm install` or `yarn` here: no `package-lock.json` or `yarn.lock` exists.
+     Supply-chain settings live in `pnpm-workspace.yaml` (from pnpm 11, `.npmrc` holds only
+     auth and registry settings and the rest of it is ignored). Dependency lifecycle scripts
+     never run unless allowed (blocked by default since pnpm 10.0): each package that needs
+     its build script is listed `true` in `allowBuilds` (`pnpm approve-builds`, since 10.1,
+     writes it; `onlyBuiltDependencies` is its pre-10.26 spelling, removed in pnpm 11) with a
+     comment saying why, after someone read that script; `strictDepBuilds: true` (the
+     default only from pnpm 11) makes an unreviewed build fail the install;
+     `dangerouslyAllowAllBuilds` is never set. `minimumReleaseAge: 1440` (minutes; since
+     pnpm 10.16, where it defaults to 0; setting it explicitly also makes pnpm 11 strict
+     about it) keeps versions younger than a day out — the window in which most malicious
+     releases are found and pulled; an exception goes in `minimumReleaseAgeExclude` with a
+     reason. CI runs `pnpm audit --prod`; an accepted advisory is ignored by its GHSA id with
+     a reason. The isolated `node_modules` layout stays (the default `nodeLinker`), so code
+     cannot import a package it does not declare; `publicHoistPattern` lists only tooling
+     binaries that must resolve from the root (`*eslint*`, `*prettier*`), never runtime
+     libraries. Expo supports isolated installs from SDK 54: `nodeLinker: hoisted` only when
+     a native library is proven to break without it, scoped to that app (with the default
+     shared lockfile the linker applies to the whole workspace, so that app gets its own
+     lockfile) and recorded in an ADR naming the library and the error. Why: npm runs every
+     dependency's install scripts by default and its flat `node_modules` lets code use
+     packages it never declared; a hijacked release does its damage in the hours after it
+     is published. Check: `node -p "require('./package.json').packageManager"` prints
+     `pnpm@` plus an exact version; `git ls-files pnpm-lock.yaml` → 1 line and
+     `git ls-files '*package-lock.json' '*yarn.lock'` → none; Grep the CI workflows for
+     `pnpm (i|install)\b` and confirm `--frozen-lockfile` on every hit, and for
+     `pnpm audit --prod` → present; Grep `pnpm-workspace.yaml` for `allowBuilds:` and
+     `minimumReleaseAge:` → present, and for
+     `dangerouslyAllowAllBuilds:\s*true|onlyBuiltDependencies|nodeLinker:\s*hoisted` → none
+     (or the ADR exists); Grep `.npmrc` for
+     `hoist|node-linker|built-dependencies|release-age` → none; Grep scripts, Dockerfiles, CI
+     and docs for `\bnpm (install|i|ci)\b|\byarn (install|add)\b` → none.
+
+G20. **One command to boot and one to test, on any OS.** The root `package.json` scripts
+     are the interface every person, agent and doc uses: `docker:up` (build and boot the
+     whole stack, migrated and seeded, and wait until it is healthy), `docker:down` (stop,
+     keep data), `docker:reset` (wipe volumes and boot again), `test:<scope>` for each
+     scope (its lint, format check, typecheck and tests; a Python scope calls `uv run …`),
+     `test:web` (the same over every web package), `e2e` and `e2e:install`. Booting differs
+     per OS, so `docker:up` runs a node dispatcher (`scripts/up.mjs`) that starts
+     `scripts/up.ps1` on Windows and `scripts/up.sh` elsewhere: the boot logic lives once
+     per shell, and it creates `.env` from `.env.example` on the first run. E2E base URLs are
+     built from the ports in `.env`, never hard-coded. `make` targets, when the repo has a
+     Makefile, call these scripts or the same boot script and never repeat their logic. The
+     README "Quick start" and "Testing" sections give exactly these commands, each of which
+     runs unchanged in PowerShell and in sh (a `pnpm <script>` line, never `export`,
+     `./x.sh` or a shell-only chain as the only way). Why: a stack that boots one way on the
+     author's machine is a stack a reviewer on Windows cannot run, and two copies of the
+     boot logic drift apart. Check:
+     `node -p "Object.keys(require('./package.json').scripts).join(' ')"` lists `docker:up`,
+     `docker:down`, `docker:reset`, `test:web`, `e2e`, `e2e:install` and a `test:<scope>` per
+     scope; Grep the README for `pnpm docker:up` and `pnpm e2e` → present
+     under "Quick start" and "Testing"; Grep the E2E config and support files for
+     `https?://(localhost|127\.0\.0\.1):\d+` → none.
+
 ### Fake-test patterns (`FT`)
 
 The ONE list. Auditors walk it entirely over the specs of a change and cite `FT<n>`. A new

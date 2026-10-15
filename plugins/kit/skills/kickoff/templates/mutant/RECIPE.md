@@ -37,7 +37,7 @@ node .claude/kit/mutant/mutant.mjs --cwd <scope> \
   (ignored by git and dev servers), sets `MUTANT_FILE` / `MUTANT_FROM` / `MUTANT_TO`, and
   compares the file's sha256 before and after.
 
-## Fallback: copy and restore (Jest or a runner without transforms)
+## Fallback: copy and restore (Jest, pytest or a runner without transforms)
 
 ```bash
 node .claude/kit/mutant/mutant.mjs --mode copy --cwd <scope> \
@@ -49,6 +49,23 @@ Use it only when no dev server, watcher or other agent reads that file during th
 say so in the report. The runner backs the file up to the temp dir, writes the mutant, runs
 the command, rewrites the original in a `finally` (retrying while Windows holds a lock) and
 checks the sha256. Exit 3 means the source changed: copy the printed backup over it now.
+
+Copy mode runs any command, so it is also the recipe for pytest (FastAPI scopes, AF14):
+
+```bash
+node .claude/kit/mutant/mutant.mjs --mode copy --cwd <scope> \
+  --file src/<package>/features/orders/service.py \
+  --from 'if used + quantity > limit:' --to 'if used + quantity >= limit:' \
+  -- uv run python -B -m pytest tests/unit/features/orders -x
+```
+
+- `python -B` keeps the mutant's bytecode out of `__pycache__`: a same-size mutant
+  restored within the same second would otherwise be loaded again from the stale `.pyc`.
+- No `--cov`: a coverage gate on a subset fails the run without a failing test (INVALID).
+- KILLED is read from pytest's final summary line (`1 failed, 3 passed in 0.42s`): keep
+  the default output or `-q`. A collection error (`1 error in …`) is INVALID.
+- Never while `uvicorn --reload` (or any watcher) serves that scope: it would load the
+  mutant.
 
 ## Reading the result
 

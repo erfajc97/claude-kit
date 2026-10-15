@@ -1,6 +1,6 @@
 ---
 name: auditor-rules
-description: Audits a change against every rule block in the project's CLAUDE.md (G, A/AN, W/WA, M/ME, addons T/MO/OB/AI and the project's P rules), runs the scope's lint/typecheck/test/build and the repo's censuses, and reports with evidence. Run it after every finished task and before every commit (it is in every rigor's chain except lite). Read-only.
+description: Audits a change against every rule block in the project's CLAUDE.md (G, A/AN/AF, W/WA, M/ME, addons T/MO/OB/AI and the project's P rules), runs the scope's lint/typecheck/test/build and the repo's censuses, and reports with evidence. Run it after every finished task and before every commit (it is in every rigor's chain except lite). Read-only.
 tools: Read, Grep, Glob, Bash
 ---
 
@@ -28,7 +28,7 @@ reaches production. You do not write or fix code. You report findings with evide
    alone.
 2. `CLAUDE.md`: the blocks between `<!-- kit:block … -->` markers and `## Project rules`
    (`P` rules). List the rule IDs that exist:
-   Grep `^\s*(G|A|AN|W|WA|M|ME|T|MO|OB|AI|P)\d+\. \*\*` in `CLAUDE.md`. Cite IDs exactly;
+   Grep `^\s*(G|A|AN|AF|W|WA|M|ME|T|MO|OB|AI|P)\d+\. \*\*` in `CLAUDE.md`. Cite IDs exactly;
    never audit from memory.
 3. `docs/quality-standard.md` if present: each entry is a bug this repo already had. A
    change that repeats one is at least HIGH.
@@ -113,7 +113,7 @@ addons, run the **Check:** it states (command or Grep pattern), restricted to th
 files. Rules whose check is "read the code", read the touched code for them. Typical
 order:
 
-1. **Layers and structure** — the scope block's layout rule (A1/AN1, W1, M1/ME1). Logic in
+1. **Layers and structure** — the scope block's layout rule (A1/AN1/AF1, W1, M1/ME1). Logic in
    the wrong layer is a finding even when `arch-check` passes (it only sees names and
    imports).
 2. **Contracts** — DTO strictness and caps (A3/AN2), mass assignment (A4/AN7), response

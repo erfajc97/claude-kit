@@ -50,6 +50,20 @@ the same commit.
 Imports are read from `.ts .tsx .js .jsx .mjs .cjs .astro` (ES `import`, `export … from`,
 `require()`, `import()`) and `.py` (`from x import`, `import x`; dots resolved).
 
+Python specifics, so `imports` and `no-cross-import` work on a FastAPI scope:
+
+- An absolute import resolves inside the folder named like its top package when the
+  importing file sits under it: in `src/shop/core/db.py`, `shop.features.orders.models` →
+  `src/shop/features/orders/models`, so a `src/<package>/` layout compares like a flat one.
+  Any other absolute import stays a package path (`sqlalchemy/orm`) and is matched with
+  `specifiers` (`"^(fastapi|starlette)(\\.|$)"`).
+- Resolved targets carry no `.py`: write `**/features/*/repository`, not `repository.py`.
+- `from pkg.features.x import repository` is read as an import of `pkg.features.x` (the
+  imported names are not resolved); the project's architecture test covers that form.
+- Tests that mirror the source tree (`tests/unit/features/<feature>/`,
+  `tests/integration/core/<package>/`) match `**/features/*` and `**/core/**` too: exclude
+  `tests/**` and `**/tests/**` in checks about source layers.
+
 ## What counts
 
 `off` scopes are skipped. By default only changed files are checked (`git diff HEAD` plus

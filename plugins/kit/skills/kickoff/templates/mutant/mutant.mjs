@@ -9,10 +9,12 @@
 //   <cwd>/node_modules/.kit-mutant/ (with `--base`, importing that config instead of
 //   vitest.config.ts) and runs the command with MUTANT_FILE / MUTANT_FROM / MUTANT_TO set.
 //   The command must pass `--config node_modules/.kit-mutant/vitest.mutant.config.mts`.
-// --mode copy (fallback for Jest or runners without transforms): backs the file up to the
-//   temp dir, writes the mutant, runs the command, ALWAYS rewrites the original (retrying on
-//   Windows file locks) and verifies its sha256. Use it only when no dev server or other
-//   agent is reading that file, and say so in the report.
+// --mode copy (fallback for Jest, pytest or any runner without transforms): backs the file
+//   up to the temp dir, writes the mutant, runs the command, ALWAYS rewrites the original
+//   (retrying on Windows file locks) and verifies its sha256. Use it only when no dev server
+//   or other agent is reading that file, and say so in the report. KILLED is read from the
+//   runner's summary: Vitest/Jest `Tests: N failed`, pytest `N failed … in 0.42s`, or an
+//   AssertionError.
 //
 // Both modes compare the file's sha256 before and after. Exit: 0 KILLED, 1 SURVIVED,
 // 2 INVALID (the mutant never ran or broke the build), 3 the source changed (restore it
@@ -54,6 +56,13 @@ export function parseArgs(argv) {
   return options;
 }
 
+/**
+ * A failing test in the runner's summary: Vitest (`Tests  1 failed | 2 passed`), Jest
+ * (`Tests:  1 failed, 2 passed`), pytest (`1 failed, 2 passed in 0.42s`; a collection error
+ * prints `1 error in …`, which is not a failing test) or a bare AssertionError.
+ */
+const FAILED_TEST = /Tests:?\s+\d+ failed|AssertionError|\b\d+ failed\b[^\n]*\bin \d+(\.\d+)?s\b/;
+
 /** Classifies one run. KILLED needs a failing TEST, not just a non-zero exit. */
 export function classify({ mode, status, output }) {
   if (mode === 'vitest') {
@@ -65,7 +74,7 @@ export function classify({ mode, status, output }) {
     }
   }
   if (status === 0) return { result: 'SURVIVED', reason: 'every test passed with the mutant: fix the TEST (G3)' };
-  if (/Tests:?\s+\d+ failed|AssertionError/.test(output)) return { result: 'KILLED', reason: 'a test failed' };
+  if (FAILED_TEST.test(output)) return { result: 'KILLED', reason: 'a test failed' };
   return { result: 'INVALID', reason: 'the run failed without a failing test (syntax, transform or setup error)' };
 }
 

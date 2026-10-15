@@ -9,10 +9,10 @@ exist, with NestJS, Astro + React and Expo out of the box.
 What it gives a project:
 
 - **Rules in `CLAUDE.md`, by ID.** Composed from blocks: general (`G`: TDD, mutation check,
-  no dead code, secrets, i18n, one rule in one place…), per stack (`A`/`AN` API and NestJS,
-  `W`/`WA` web and Astro, `M`/`ME` mobile and Expo) and optional addons (`T` multi-tenancy,
-  `MO` money, `OB` observability, `AI` LLM providers). The text is copied into the project,
-  so it works on any machine, even without the plugin.
+  no dead code, secrets, i18n, one rule in one place…), per stack (`A`/`AN`/`AF` API, NestJS
+  and FastAPI, `W`/`WA` web and Astro, `M`/`ME` mobile and Expo) and optional addons (`T`
+  multi-tenancy, `MO` money, `OB` observability, `AI` LLM providers). The text is copied
+  into the project, so it works on any machine, even without the plugin.
 - **Read-only auditors**: `auditor-rules`, `auditor-tests` (coverage, mutants, the 22
   fake-test patterns), `auditor-security` (per-endpoint protection table), `auditor-ux`
   (360/1280 px, phones, a11y, i18n, brand), `auditor-challenge` (every requirement with
@@ -21,6 +21,7 @@ What it gives a project:
   structure specs: layers, feature layout, forbidden imports, secrets, dead code.
 - **Builders per stack** (`kit-nestjs`, `kit-astro`, `kit-expo`) that work test-first and
   never commit.
+- **FastAPI** (`AF` rules, stack `fastapi`) has rules and audits, but no builder plugin yet.
 - **An opt-in seal**: a hook that blocks `git commit` until the audit passed on exactly the
   staged files.
 

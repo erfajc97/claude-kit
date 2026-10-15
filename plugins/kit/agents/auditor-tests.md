@@ -26,7 +26,8 @@ You do not write or fix tests. You report findings with evidence.
    `coverage` (the G2 gate, default 90), `testRunner`, `tracking`. Missing → note it,
    suggest `/kit:adopt`, use `CLAUDE.md` only.
 2. `CLAUDE.md`: G2 (TDD), G3 (mutation), the `FT1…FT22` list, and the test rules of the
-   touched scopes' blocks (A17/AN13/AN14, W15, M15/ME10) and addons (MO6, T2, OB7, AI7).
+   touched scopes' blocks (A17/AN13/AN14/AF12/AF14, W15, M15/ME10) and addons (MO6, T2,
+   OB7, AI7).
 3. The tracking doc the header names (`docs/plan.md` or `docs/backlog.md`): the acceptance
    criteria of the task IDs in scope (the caller names them, or Grep the IDs from the
    commit message draft / builder report).
@@ -147,8 +148,8 @@ echo "exit=$?"
 
 - Exit 0 KILLED · 1 SURVIVED · 2 INVALID (fix your snippet and rerun; it is neither) ·
   3 the source changed — STOP and tell the owner to restore it from the printed backup.
-- Jest-only scope: do not run the copy fallback; reason the mutant and name the test that
-  would kill it, and ask the builder (in Notes) to run it.
+- Jest-only or pytest scope: do not run the copy fallback; reason the mutant and name the
+  test that would kill it, and ask the builder (in Notes) to run it (pytest: AF14).
 - A SURVIVED mutant → HIGH (BLOCKER on a money, tenancy or permission rule): the TEST is
   wrong. Name what assertion is missing.
 - If the builder report lists mutants, re-run at least two of them; a reported kill that

@@ -46,8 +46,11 @@ git log --format=%s -40
 
 Scope name = the folder name (`apps/admin` → `admin`); path = the folder. Commands from its
 scripts (`lint`; `typecheck`/`check-types`/`tsc`; `test`; `test:integration`/`test:int`;
-`build`), test runner from dependencies (`vitest`, `jest`, `pytest`). A single-package repo
-has one scope with path `.`.
+`build`), test runner from dependencies (`vitest`, `jest`, `pytest`). A `fastapi` scope has
+no scripts: take its commands from the root `package.json` `test:<scope>` script or the
+Makefile when they exist, else the kickoff defaults (`uv run ruff check .`,
+`uv run ruff format --check .`, `uv run mypy`, `uv run pytest --cov`; test runner
+`pytest`). A single-package repo has one scope with path `.`.
 
 **Everything else.**
 - Requirements: Glob `docs/**/*.pdf`, `docs/**/prd*.md`, `**/PRD.md`, `contexto/**`; a
@@ -158,7 +161,7 @@ or edit them; the user decides.
 | `auditor-rules` | `kit:auditor-rules` | same role |
 | `auditor-<x>` (one big auditor) | `kit:auditor-rules` + `kit:auditor-tests` + `kit:auditor-security` | its project-specific checks may become `P` rules or `.claude/kit-structure/*.structure.json` checks |
 | `auditor-integrations` | `kit:auditor-rules` with the `observability` addon (OB) | keep it if it covers project-specific providers |
-| `api-builder` | `kit-nestjs:api-builder` | |
+| `api-builder` | `kit-nestjs:api-builder` | NestJS only; a FastAPI project keeps its own builder (the kit has `AF` rules and audits, no FastAPI builder yet) |
 | `web-builder` | `kit-astro:web-builder` | |
 | `qa-e2e` | `kit-astro:qa-e2e` | |
 | `mobile-builder` | `kit-expo:mobile-builder` | |

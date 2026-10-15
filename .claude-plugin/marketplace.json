@@ -1,8 +1,10 @@
 {
   "name": "erfa-kit",
-  "owner": { "name": "erfajc97" },
+  "owner": {
+    "name": "erfajc97"
+  },
   "metadata": {
-    "description": "Engineering harness: non-negotiable rules, builders and auditors for NestJS, Astro/React and Expo projects, new or existing."
+    "description": "Engineering harness: non-negotiable rules, builders and auditors for NestJS, FastAPI, Astro/React and Expo projects, new or existing."
   },
   "plugins": [
     {

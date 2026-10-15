@@ -1,0 +1,86 @@
+{
+  "block": "api-fastapi",
+  "version": 1,
+  "appliesTo": { "kind": "api", "stacks": ["fastapi"] },
+  "checks": [
+    {
+      "rule": "AF1",
+      "type": "layout",
+      "description": "A feature root holds only layer modules and the named subpackages",
+      "unit": "**/features/*",
+      "exclude": ["tests/**", "**/tests/**"],
+      "allowFiles": ["^(__init__|router|schemas|service|repository|models|dependencies|errors)\\.py$"],
+      "allowDirs": ["domain", "providers", "helpers", "jobs"],
+      "severity": "HIGH",
+      "fix": "move the module into domain/, providers/, helpers/ or jobs/ (a package with __init__.py)"
+    },
+    {
+      "rule": "AF1",
+      "type": "forbidden-import",
+      "description": "A repository never imports the web framework (no HTTP errors in data access)",
+      "files": ["**/features/*/repository.py"],
+      "specifiers": ["^(fastapi|starlette)(\\.|$)"],
+      "severity": "HIGH",
+      "fix": "return rows or None; the service raises AppError with a catalog code"
+    },
+    {
+      "rule": "AF1",
+      "type": "forbidden-import",
+      "description": "domain/ stays pure: no web framework, ORM, HTTP client or storage SDK",
+      "files": ["**/domain/**/*.py"],
+      "exclude": ["tests/**", "**/tests/**"],
+      "specifiers": ["^(fastapi|starlette|sqlalchemy|httpx|requests|aiohttp|aioboto3|boto3|botocore)(\\.|$)"],
+      "severity": "HIGH",
+      "fix": "keep the rule pure and pass plain values in; the I/O belongs to a provider or the repository"
+    },
+    {
+      "rule": "AF1",
+      "type": "forbidden-import",
+      "description": "A feature's domain/ never imports a layer above it, its ORM models or its DTOs",
+      "files": ["**/features/*/domain/**/*.py"],
+      "imports": ["**/features/*/{router,service,repository,models,schemas}"],
+      "severity": "HIGH",
+      "fix": "invert it: the service imports the domain and maps models or DTOs to domain types"
+    },
+    {
+      "rule": "AF2",
+      "type": "forbidden-content",
+      "description": "No SQL in strings: no sqlalchemy.text, literal_column or string execute()",
+      "files": ["**/*.py"],
+      "exclude": ["**/migrations/**", "**/alembic/**", "tests/**", "**/tests/**"],
+      "pattern": "^\\s*from\\s+sqlalchemy(\\.sql(\\.expression|\\.elements)?)?\\s+import\\s+[^#\\n]*\\b(text|TextClause|literal_column)\\b|\\b(sa|sqlalchemy)\\.(sql\\.)?(text|literal_column)\\(|\\bexec_driver_sql\\(|\\.execute\\(\\s*[fbr]?[\"']",
+      "severity": "HIGH",
+      "fix": "build the statement with select()/insert()/update()/delete() and bound parameters"
+    },
+    {
+      "rule": "AF5",
+      "type": "forbidden-content",
+      "description": "Business errors are AppError with a catalog code, never a raw HTTPException",
+      "files": ["**/*.py"],
+      "exclude": ["**/core/errors/**", "tests/**", "**/tests/**"],
+      "pattern": "\\braise\\s+HTTPException\\(",
+      "severity": "HIGH",
+      "fix": "raise AppError(ErrorCode.X, details=...) with the code from the error catalog"
+    },
+    {
+      "rule": "AF8",
+      "type": "forbidden-import",
+      "description": "Async all the way: no blocking HTTP client",
+      "files": ["**/*.py"],
+      "exclude": ["scripts/**", "**/scripts/**"],
+      "specifiers": ["^requests(\\.|$)"],
+      "severity": "HIGH",
+      "fix": "use the shared httpx.AsyncClient of the provider adapter (with its timeout)"
+    },
+    {
+      "rule": "AF8",
+      "type": "forbidden-content",
+      "description": "Async all the way: no time.sleep in the app",
+      "files": ["**/*.py"],
+      "exclude": ["scripts/**", "**/scripts/**", "tests/**", "**/tests/**"],
+      "pattern": "\\btime\\.sleep\\(",
+      "severity": "MEDIUM",
+      "fix": "await asyncio.sleep(...), or move the blocking work to run_in_threadpool / asyncio.to_thread"
+    }
+  ]
+}

@@ -176,4 +176,25 @@ A19. **Tooling green with a coverage gate.** `{{commands.api.lint}}`,
     runner config so CI fails below it. Why: a gate in config cannot be
     forgotten. Check: run each command and read its exit code; the thresholds live in the
     runner config.
+
+A20. **A third party with no SLA on a critical path is hedged.** When a request a user is
+    waiting on depends on a provider without an SLA (a public geocoder, a free search or
+    lookup API), its A9 adapter is a hedge behind the same port: the primary searches
+    alone for a short delay (from configuration); if it is late, fails or answers empty, a
+    backup provider is asked as well. The first answer WITH results wins; the loser is
+    cancelled AND awaited, so no task, connection or log line outlives the request; the
+    whole search keeps ONE overall deadline. Only the primary's own non-empty answers are
+    cached: a backup's answer or an empty answer may come from an outage and would be served
+    for the whole TTL after the provider recovers. Both answering empty (or the primary
+    empty and the backup failing) is "no results"; the primary failing with the backup
+    empty, both failing, or the deadline passing is the catalog's `unavailable` code (A7),
+    never "no results". The client shows that state with a retry and never silently
+    degrades to unvalidated free text (W18). Why: waiting for the primary's timeout before
+    asking a backup makes every slow request slower, and an outage reported or cached as
+    "nothing found" lies to users long after it ends. Check: the hedge's tests cover a slow
+    primary (the backup's answer wins), an empty primary, a failing primary with an empty
+    backup (→ `unavailable`), both failing, the deadline, and the loser's cancellation with
+    no task left pending afterwards (Python: `asyncio.all_tasks()` holds only the test's
+    own; Node: the loser's `AbortSignal` fired); the cache test proves a backup answer and
+    an empty answer are not stored.
 <!-- /kit:block api-common -->

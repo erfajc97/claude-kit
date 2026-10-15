@@ -245,12 +245,24 @@ export function extractImports(path, text) {
   return found;
 }
 
+/**
+ * Absolute Python import → scope-relative path. When the importing file sits inside a
+ * folder named like the import's top package (`src/shop/core/db.py` importing
+ * `shop.features.orders`), the import resolves inside that folder
+ * (`src/shop/features/orders`), so `src/<package>/` layouts compare like flat ones.
+ */
+function pythonAbsolute(scopeRel, rest) {
+  const folders = posix.dirname(scopeRel).split('/');
+  const at = folders.indexOf(rest.split('/')[0]);
+  return at > 0 ? `${folders.slice(0, at).join('/')}/${rest}` : rest;
+}
+
 /** Scope-relative path an import points to, or null for a package import. */
-function resolveImport(scopeRel, specifier, isPython) {
+export function resolveImport(scopeRel, specifier, isPython) {
   if (isPython) {
     const dots = /^\.*/.exec(specifier)[0].length;
     const rest = specifier.slice(dots).replaceAll('.', '/');
-    if (dots === 0) return rest;
+    if (dots === 0) return pythonAbsolute(scopeRel, rest);
     let base = posix.dirname(scopeRel);
     for (let i = 1; i < dots; i++) base = posix.dirname(base);
     return posix.normalize(rest ? `${base}/${rest}` : base);
@@ -285,6 +297,7 @@ function runCheck(check, files, ctx) {
       const re = unitRegex(check.unit);
       const allow = (check.allowFiles ?? []).map((p) => p);
       for (const file of files) {
+        if (globMatch(check.exclude ?? [], file.rel)) continue;
         const m = re.exec(file.rel);
         if (!m || m[3] === undefined) continue;
         const [, prefix, unit, rest] = m;

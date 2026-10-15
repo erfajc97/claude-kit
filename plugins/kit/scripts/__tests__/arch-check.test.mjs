@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { extractImports, globMatch } from '../arch-check.mjs';
+import { extractImports, globMatch, resolveImport } from '../arch-check.mjs';
 
 const CHECK = join(dirname(fileURLToPath(import.meta.url)), '..', 'arch-check.mjs');
 const repos = [];
@@ -213,7 +213,15 @@ describe('api layers (A1, A8, AN1, AN12) and Python imports', () => {
     write(repo, 'api/app/core/db.py', 'from app.features.orders import repository\n');
     const r = check(repo);
     assert.ok(hasRule(r.counted, 'A1'));
-    assert.match(r.stdout, /No structure spec for stack `fastapi`/);
+    assert.doesNotMatch(r.stdout, /No structure spec for stack `fastapi`/);
+  });
+
+  it('a stack without a spec runs only the common checks, and the report says so', () => {
+    const repo = makeRepo({ kit: { scopes: { api: { stack: 'django', path: 'api', mode: 'enforce' } } } });
+    write(repo, 'api/app/core/db.py', 'from app.features.orders import repository\n');
+    const r = check(repo);
+    assert.ok(hasRule(r.counted, 'A1'));
+    assert.match(r.stdout, /No structure spec for stack `django`/);
   });
 
   it('Python: relative dots resolve, so a sibling feature repository is caught', () => {
@@ -228,6 +236,94 @@ describe('api layers (A1, A8, AN1, AN12) and Python imports', () => {
     const repo = makeRepo({ kit: { scopes: { api: { stack: 'fastapi', path: 'api', mode: 'enforce' } } } });
     write(repo, 'api/src/modules/orders/orders.utils.ts', 'export default 1;\n');
     assert.ok(!hasRule(check(repo).counted, 'AN1'));
+  });
+});
+
+describe('FastAPI scope (AF1, AF2, AF5, AF8) and src-layout Python imports', () => {
+  // The uv default layout: the package lives in src/<package>/ and imports are absolute.
+  const FASTAPI = { scopes: { api: { kind: 'api', stack: 'fastapi', path: 'apps/api', mode: 'enforce' } } };
+  const rows = (r, rule) => r.counted.filter((row) => row.split('|')[2].trim() === rule);
+
+  it('absolute imports resolve inside src/<package>/; a package import stays a package', () => {
+    assert.equal(resolveImport('src/shop/core/db.py', 'shop.features.orders.models', true), 'src/shop/features/orders/models');
+    assert.equal(resolveImport('app/core/db.py', 'app.features.orders', true), 'app/features/orders');
+    assert.equal(resolveImport('src/shop/core/db.py', 'sqlalchemy.orm', true), 'sqlalchemy/orm');
+    assert.equal(resolveImport('src/shop/features/a/domain/rules.py', '..service', true), 'src/shop/features/a/service');
+  });
+
+  it('a clean feature passes, with its mirrored tests', () => {
+    const repo = makeRepo({ kit: FASTAPI });
+    write(repo, 'apps/api/src/shop/features/orders/__init__.py', '');
+    write(repo, 'apps/api/src/shop/features/orders/router.py', 'from fastapi import APIRouter\nfrom shop.features.orders import service\n');
+    write(repo, 'apps/api/src/shop/features/orders/repository.py', 'from sqlalchemy import select\nfrom shop.features.orders.models import Order\n');
+    write(repo, 'apps/api/src/shop/features/orders/domain/__init__.py', '');
+    write(repo, 'apps/api/src/shop/features/orders/domain/pricing.py', 'from decimal import Decimal\n');
+    write(repo, 'apps/api/tests/unit/features/orders/test_pricing.py', 'from shop.features.orders.domain.pricing import Decimal\n');
+    write(repo, 'apps/api/tests/integration/core/db/test_session.py', 'from shop.features.orders.models import Order\n');
+    const r = check(repo);
+    assert.equal(r.status, 0, r.stdout);
+    assert.match(r.stdout, /AF1 A feature root holds only layer modules and the named subpackages ✔/);
+  });
+
+  it('a stray module or folder at a feature root fails AF1; the mirrored tests folder does not', () => {
+    const repo = makeRepo({ kit: FASTAPI });
+    write(repo, 'apps/api/src/shop/features/orders/ranking.py', 'RANK = 1\n');
+    write(repo, 'apps/api/src/shop/features/orders/utils/__init__.py', '');
+    write(repo, 'apps/api/tests/unit/features/orders/test_ranking.py', 'def test_rank() -> None: ...\n');
+    const af1 = rows(check(repo), 'AF1');
+    assert.equal(af1.length, 2);
+    assert.match(af1.join('\n'), /`ranking\.py` is not allowed/);
+    assert.match(af1.join('\n'), /folder `utils\/` is not a layer/);
+  });
+
+  it('a repository importing FastAPI and an impure or upward domain import fail AF1', () => {
+    const repo = makeRepo({ kit: FASTAPI });
+    write(repo, 'apps/api/src/shop/features/orders/repository.py', 'from fastapi import HTTPException\n');
+    write(repo, 'apps/api/src/shop/features/orders/domain/rules.py', 'from sqlalchemy import select\nfrom ..service import place\nfrom shop.features.orders.schemas import OrderCreate\n');
+    const af1 = rows(check(repo), 'AF1');
+    assert.equal(af1.length, 4, af1.join('\n'));
+    assert.ok(af1.some((row) => row.includes('repository.py:1')));
+    for (const line of [1, 2, 3]) assert.ok(af1.some((row) => row.includes(`rules.py:${line}`)), `rules.py:${line}`);
+  });
+
+  it('absolute src-layout imports are caught across features and from core (A1)', () => {
+    const repo = makeRepo({ kit: FASTAPI });
+    write(repo, 'apps/api/src/shop/features/billing/service.py', 'from shop.features.orders.repository import find_order\n');
+    write(repo, 'apps/api/src/shop/core/db/base.py', 'from shop.features.orders.models import Order\n');
+    const a1 = rows(check(repo), 'A1');
+    assert.equal(a1.length, 2, a1.join('\n'));
+    assert.ok(a1.some((row) => row.includes('billing/service.py:1') && row.includes('another unit')));
+    assert.ok(a1.some((row) => row.includes('core/db/base.py:1')));
+  });
+
+  it('raw SQL fails AF2 in the app, not in migrations; raw HTTPException fails AF5 outside core/errors', () => {
+    const repo = makeRepo({ kit: FASTAPI });
+    write(repo, 'apps/api/src/shop/features/orders/repository.py', 'from sqlalchemy import select, text\n');
+    write(repo, 'apps/api/src/shop/features/orders/service.py', 'async def f(s):\n    await s.execute(f"select {1}")\n    raise HTTPException(status_code=404)\n');
+    write(repo, 'apps/api/migrations/versions/0001_initial.py', 'op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")\n');
+    write(repo, 'apps/api/src/shop/core/errors/handlers.py', 'raise HTTPException(status_code=500)\n');
+    const r = check(repo);
+    const af2 = rows(r, 'AF2');
+    assert.equal(af2.length, 2, af2.join('\n'));
+    assert.ok(af2.every((row) => !row.includes('migrations/')));
+    const af5 = rows(r, 'AF5');
+    assert.equal(af5.length, 1);
+    assert.match(af5[0], /service\.py:3/);
+  });
+
+  it('a blocking HTTP client fails AF8 (HIGH); time.sleep is a MEDIUM candidate', () => {
+    const repo = makeRepo({ kit: FASTAPI });
+    write(repo, 'apps/api/src/shop/features/orders/providers/client.py', 'import requests\nimport time\ntime.sleep(1)\n');
+    const af8 = rows(check(repo), 'AF8');
+    assert.equal(af8.length, 2);
+    assert.ok(af8.some((row) => row.startsWith('| HIGH') && row.includes('client.py:1')));
+    assert.ok(af8.some((row) => row.startsWith('| MEDIUM') && row.includes('client.py:3')));
+  });
+
+  it('the FastAPI spec does not apply to a NestJS scope', () => {
+    const repo = makeRepo();
+    write(repo, 'apps/api/src/modules/orders/orders.service.ts', "import { find } from './orders.repository';\nexport const raise = 'raise HTTPException(';\n");
+    assert.ok(!hasRule(check(repo).counted, 'AF5'));
   });
 });
 

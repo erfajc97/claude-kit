@@ -37,11 +37,12 @@ Accept "defaults" for any of them.
 
 1. **Project name** (default: the folder name, or the skill argument).
 2. **Scopes** — one line per app: `name · kind · stack · path`. Kinds: `api`, `web`,
-   `mobile`. Stacks with a dedicated block: `nestjs` (api), `astro` (web), `expo`
-   (mobile); any other stack gets only the kind's common block. Several apps of one kind
-   are fine (`web`, `admin`, `landing`). For an api: the validator (`nestjs-zod` default |
-   `class-validator`). Default: `api · api · nestjs · apps/api`, `web · web · astro ·
-   apps/web`, `mobile · mobile · expo · apps/mobile` — keep only what exists.
+   `mobile`. Stacks with a dedicated block: `nestjs` (api, default) and `fastapi` (api),
+   `astro` (web), `expo` (mobile); any other stack gets only the kind's common block.
+   Several apps of one kind are fine (`web`, `admin`, `landing`). For a `nestjs` api: the
+   validator (`nestjs-zod` default | `class-validator`). Default: `api · api · nestjs ·
+   apps/api`, `web · web · astro · apps/web`, `mobile · mobile · expo · apps/mobile` —
+   keep only what exists.
 3. **Requirements source** — the PRD, the PDF statement or the client brief (a path; a file
    outside the repo is copied into `docs/`), and how its IDs look (`R-12`, `PRD §3.2`,
    `DOC-03`). "Later" is allowed: then `docs/prd.md` is created empty.
@@ -60,7 +61,11 @@ Accept "defaults" for any of them.
    only").
 9. **UI locale** for end-user copy (default `es-AR`).
 10. **Commands** per scope — lint, typecheck, test, integration (api), build (`n/a` allowed
-    for mobile) — or "fill later"; test runner per scope (default `vitest`).
+    for mobile) — or "fill later"; test runner per scope (default `vitest`; `pytest` for a
+    `fastapi` scope). Defaults for a `fastapi` scope (run from its path, AF11):
+    lint `uv run ruff check . && uv run ruff format --check .`, typecheck `uv run mypy`,
+    test `uv run pytest --cov`, integration `uv run pytest tests/integration` (Docker up),
+    build `n/a` or the image build.
 11. **Seal** — block `git commit` until the audit passed on the staged files? (default no).
 12. **Coverage gate** (default 90 %).
 
@@ -190,6 +195,8 @@ Merge (never drop existing keys or hooks) with `templates/settings.json`:
 - `enabledPlugins`: `kit@erfa-kit` always; `kit-nestjs@erfa-kit` if a scope's stack is
   `nestjs`; `kit-astro@erfa-kit` if `astro`; `kit-expo@erfa-kit` if `expo`;
   `kit-design@erfa-kit` ONLY when the user chose brand option (b) or asked for it.
+  `fastapi` has rules (`AF`) and audits but no builder plugin yet: say so in the hand-over;
+  the main agent builds those tasks itself, following `AF` and `A`.
 
 Validate with `node -e "JSON.parse(require('fs').readFileSync('.claude/settings.json','utf8'))"`.
 

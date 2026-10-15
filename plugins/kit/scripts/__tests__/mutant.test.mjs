@@ -113,4 +113,16 @@ describe('classify', () => {
     assert.equal(classify({ mode: 'copy', status: 0, output: 'Tests  4 passed' }).result, 'SURVIVED');
     assert.equal(classify({ mode: 'vitest', status: 1, output: '[kit-mutant] snippet must occur exactly once' }).result, 'INVALID');
   });
+
+  it('reads pytest summaries in copy mode: a failed test kills, a collection error does not', () => {
+    // `pytest.raises` that no longer raises prints no AssertionError: only the summary says it failed.
+    const didNotRaise = 'E   Failed: DID NOT RAISE <class \'AppError\'>\n========= 1 failed, 3 passed in 0.42s =========';
+    assert.equal(classify({ mode: 'copy', status: 1, output: didNotRaise }).result, 'KILLED');
+    assert.equal(classify({ mode: 'copy', status: 1, output: '1 failed, 12 passed in 61.03s (0:01:01)' }).result, 'KILLED');
+    const collection = 'E   SyntaxError: invalid syntax\n!!! Interrupted: 1 error during collection !!!\n==== 1 error in 0.30s ====';
+    assert.equal(classify({ mode: 'copy', status: 2, output: collection }).result, 'INVALID');
+    const coverageGate = '==== 4 passed in 0.90s ====\nFAIL Required test coverage of 90% not reached. Total coverage: 41.00%';
+    assert.equal(classify({ mode: 'copy', status: 1, output: coverageGate }).result, 'INVALID');
+    assert.equal(classify({ mode: 'copy', status: 0, output: '==== 4 passed in 0.31s ====' }).result, 'SURVIVED');
+  });
 });
