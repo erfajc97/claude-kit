@@ -71,12 +71,18 @@ L12. **Small tagged commits.** One step, one commit, only after the human says y
 
 L13. **Clean diff.** No debug prints, TODO/FIXME, commented-out code, unused exports or
      invisible characters in added lines. Why: they ship. Check: `/kit:live-audit --quick`
-     (arch-check).
+     (arch-check) and the debug-print grep of `/kit:live-step` (arch-check has none).
 
 L14. **Park, do not expand.** Anything outside the plan (an idea, a smell, a risk) goes to
      `.live/parked.md` in one line and into the wrap-up; scope grows only through an approved
      `--amend`. Why: an hour is won by finishing the asked thing well. Check: `parked.md`
      against the diff.
+
+L15. **No destructive git, no push.** Never `git push`, `reset`, `checkout` or `restore` of
+     files, `stash`, `clean`, `rebase` or any `--force`. Undo your own change by editing it
+     back; a mutation is restored from its `.live/orig.bak` copy. Why: an uncommitted green
+     step is lost for good, and the remote is not yours to touch. Check: `git reflog` shows
+     only commits.
 
 ### Question lenses (what the AI asks the human)
 

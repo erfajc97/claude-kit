@@ -42,6 +42,16 @@ Invoked directly, without that list: Glob `**/kit/skills/kickoff/external-skills
 under `~/.claude/plugins`, keep the entries whose `usedBy` names you and whose `useWhen`
 (`kind`, `stack`) matches a touched scope, and test each `checkPath` yourself (`ls -d`).
 
+## 0c. Live profile (`kit.json` → `"profile": "live"`)
+
+A timed pairing session on someone else's front end. The live `kit.json` has one scope of
+kind `app`: every UI path the caller names is in scope (the `web`/`mobile` filters, the brand
+and the `W*`/`M*` rule IDs do not apply). Check against `.live/rules.md`: loading, empty and
+error states and edge input (`L6`), input handling and what leaves the browser (`L7`), what
+the user sees on failure (`L8`), plus accessible names, keyboard use and contrast. Never start
+a dev server: judge from the code unless the app is already running. A file that is untracked
+or absent at the baseline SHA the caller gives is entirely new. Time box about 3 minutes.
+
 ## 1. What is in scope
 
 The caller's paths, or `git diff HEAD --name-status` + `git ls-files --others --exclude-standard`,

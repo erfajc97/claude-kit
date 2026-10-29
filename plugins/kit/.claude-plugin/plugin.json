@@ -1,6 +1,6 @@
 {
   "name": "kit",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Core engineering harness: rule blocks, auditors, the kickoff / adopt / audit / phase-done workflow and the timed live-coding workflow (live-map, live-plan, live-step, live-audit, live-wrap).",
   "author": {
     "name": "erfajc97"

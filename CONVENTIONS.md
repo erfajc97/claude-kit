@@ -304,7 +304,8 @@ For a timed pairing session on code someone else wrote. `scripts/live.mjs init` 
 `/kit:live-map`) records the baseline SHA, writes `.claude/kit.json` (one scope `app`, mode
 `report`, `tracking: "live"`, `audit.chain` tests / challenge / security) and the session
 files in `.live/` (`state.json`, `rules.md`, `statement.md`, `checklist.md`, `plan.md`,
-`decisions.md`, `parked.md`, `map.md`, `baseline-tests.txt`, `audit.md`, `handoff.md`), and
+`decisions.md`, `parked.md`, `steps.md`, `map.md`, `baseline-tests.txt`, `baseline-lint.txt`,
+`baseline-types.txt`, `audit.md`, `handoff.md`), and
 hides them through `.git/info/exclude`: the repository's own files and `.gitignore` are never
 touched.
 

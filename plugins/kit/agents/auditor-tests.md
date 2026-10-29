@@ -57,6 +57,14 @@ exists; otherwise say so and review the `mutant → killed by` lines of the step
 instead. At most 3 mutants, time box about 3 minutes, diff against the baseline SHA the
 caller gives.
 
+Overrides in this profile: section 2's "exit ≠ 0 → BLOCKER" applies only to a failure that is
+NOT listed in `.live/baseline-tests.txt` (the listed ones are Pre-existing); the author's
+evidence for L10 is the `mutant → killed by` lines in `.live/steps.md`, because without
+`.claude/kit/mutant/` you cannot run mutants and the "run /kit:adopt --update" note does not
+apply; the caller passes the fast-pass results, so do not rerun the suite unless a failure
+needs it; a file that is untracked or absent at the baseline SHA is entirely new (its
+`git diff <baseSha>` is empty).
+
 ## 1. What is in scope
 
 The paths the caller named, or:

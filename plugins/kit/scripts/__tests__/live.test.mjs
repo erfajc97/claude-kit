@@ -58,7 +58,8 @@ function live(cwd, ...args) {
   return { code: run.status, text: run.stdout, json };
 }
 
-const PLAN = ['# Plan', '', '| ID | Step | First test(s) | Est | Status |', '|---|---|---|---|---|', '| S1 | list | `lists` | 8 | ⬜ |', '| S2 | cancel | `cancels` | 10 | ⬜ |', '| S3 | page | `pages` | 12 | ⬜ |', ''].join('\n');
+const PLAN = ['# Plan', '', '| ID | Step | First test(s) | Est | Reqs | Status |', '|---|---|---|---|---|---|', '| S1 | list | `lists` | 8 | R1 | ⬜ |', '| S2 | cancel | `cancels` | 10 | R1 | ⬜ |', '| S3 | page | `pages` | 12 | R2 | ⬜ |', ''].join('\n');
+const AUDITED_PLAN = ['# Plan', '', '| ID | Step | First test(s) | Est | Reqs | Status |', '|---|---|---|---|---|---|', '| S1 | list | `lists` | 8 | R1 | ✅ |', '| S1b | fix | `fixes` | 3 | R1 | ⬜ |', ''].join('\n');
 
 describe('live.mjs init', () => {
   it('exits 3 outside a git repository', () => {
@@ -131,9 +132,9 @@ describe('live.mjs step and status', () => {
     assert.equal(live(repo, 'step', 'S1', 'done', '--commit', 'abc1234').code, 0);
     assert.equal(live(repo, 'step', 'S2', 'doing').code, 0);
     const plan = readFileSync(join(repo, '.live', 'plan.md'), 'utf8');
-    assert.match(plan, /\| S1 \| list \| `lists` \| 8 \| ✅ \|/);
-    assert.match(plan, /\| S2 \| cancel \| `cancels` \| 10 \| 🔄 \|/);
-    assert.match(plan, /\| S3 \| page \| `pages` \| 12 \| ⬜ \|/);
+    assert.match(plan, /\| S1 \| list \| `lists` \| 8 \| R1 \| ✅ \|/);
+    assert.match(plan, /\| S2 \| cancel \| `cancels` \| 10 \| R1 \| 🔄 \|/);
+    assert.match(plan, /\| S3 \| page \| `pages` \| 12 \| R2 \| ⬜ \|/);
     const status = live(repo, 'status', '--json').json;
     assert.deepEqual(status.steps, { total: 3, done: 1, open: 2, current: 'S2', pendingEst: 22 });
     assert.equal(status.next, '/kit:live-step');
@@ -214,6 +215,44 @@ describe('arch-check in a live repository', () => {
   });
 });
 
+describe('live.mjs cmd, step clock and fix rows', () => {
+  it('stores a command detection missed, in the state and in kit.json', () => {
+    const repo = makeRepo({ 'README.md': 'x' });
+    assert.equal(live(repo, 'init').json.commands.test, '');
+    assert.equal(live(repo, 'cmd', 'test', 'make test').code, 0);
+    assert.equal(live(repo, 'status', '--json').json.commands.test, 'make test');
+    assert.equal(JSON.parse(readFileSync(join(repo, '.claude', 'kit.json'), 'utf8')).commands.app.test, 'make test');
+    assert.equal(live(repo, 'cmd', 'nonsense', 'x').code, 2);
+    assert.equal(live(repo, 'cmd', 'test').code, 2, 'an empty command is refused');
+  });
+
+  it('times the current step and flags it at 1.5x its estimate', () => {
+    const repo = makeRepo();
+    live(repo, 'init');
+    write(repo, '.live/plan.md', PLAN);
+    live(repo, 'step', 'S1', 'doing');
+    const file = join(repo, '.live', 'state.json');
+    const state = JSON.parse(readFileSync(file, 'utf8'));
+    state.stepStarted.S1 = new Date(Date.now() - 13 * 60000).toISOString();
+    writeFileSync(file, JSON.stringify(state));
+    assert.deepEqual(live(repo, 'status', '--json').json.currentStep, { id: 'S1', elapsed: 13, est: 8, over: true });
+    assert.match(live(repo, 'status').text, /S1 en curso 13\/8 min[\s\S]*⚠ S1 lleva 1\.5×/);
+  });
+
+  it('keeps the audit phase while a fix row runs and points to the wrap-up after it', () => {
+    const repo = makeRepo();
+    live(repo, 'init');
+    write(repo, '.live/plan.md', AUDITED_PLAN);
+    live(repo, 'phase', 'audit');
+    assert.equal(live(repo, 'status', '--json').json.next, '/kit:live-step');
+    live(repo, 'step', 'S1b', 'doing');
+    live(repo, 'step', 'S1b', 'done');
+    const status = live(repo, 'status', '--json').json;
+    assert.equal(status.phase, 'audit');
+    assert.equal(status.next, '/kit:live-wrap');
+  });
+});
+
 describe('detect', () => {
   const project = (files) => {
     const dir = tmp();
@@ -245,6 +284,15 @@ describe('detect', () => {
     assert.equal(py.commands.lint, 'uv run ruff check .');
     assert.equal(project({ 'go.mod': 'module x\n' }).commands.test, 'go test ./...');
     assert.equal(project({ 'Cargo.toml': '[package]\n' }).commands.test, 'cargo test');
+  });
+
+  it('flags uninstalled dependencies and offers a frozen install', () => {
+    const fresh = project({ 'package.json': '{"scripts":{"test":"vitest run"}}', 'package-lock.json': '{}' });
+    assert.equal(fresh.depsInstalled, false);
+    assert.equal(fresh.commands.install, 'npm ci');
+    const ready = project({ 'package.json': '{}', 'node_modules/.keep': '', 'pnpm-lock.yaml': '' });
+    assert.equal(ready.depsInstalled, true);
+    assert.equal(ready.commands.install, 'pnpm install --frozen-lockfile');
   });
 
   it('leaves the commands empty for a project it does not know', () => {

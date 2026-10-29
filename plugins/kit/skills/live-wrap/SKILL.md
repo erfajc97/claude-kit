@@ -7,12 +7,15 @@ disable-model-invocation: true
 
 # /kit:live-wrap — tell the story (2 min)
 
-`LIVE` is `node "${CLAUDE_PLUGIN_ROOT}/scripts/live.mjs"` (not substituted → `<this skill's
-base directory>/../../scripts/live.mjs`). Language and brevity as in `/kit:live-map`
+`LIVE <args>` means running `node "${CLAUDE_PLUGIN_ROOT}/scripts/live.mjs" <args>` with Bash
+(variable not substituted → `<this skill's base directory>/../../scripts/live.mjs`). Pass free
+text to `LIVE` in single quotes, without apostrophes, backticks or `$`. Any `ok:false` or
+non-zero exit: show `error` and `hint`, and STOP. Language and brevity as in `/kit:live-map`
 (`--lang` overrides). Arguments: $ARGUMENTS
 
 1. Read: `LIVE status --json`, `LIVE changed --stat`, `.live/plan.md`, `.live/checklist.md`,
-   `.live/decisions.md`, `.live/parked.md` and `.live/audit.md` when present.
+   `.live/steps.md`, `.live/decisions.md`, `.live/parked.md` and `.live/audit.md` when
+   present.
 2. Update `.live/checklist.md`: the final status of every requirement (✅ / ⚠️ / ❌) with its
    evidence (file:line and test name). Never ✅ without evidence.
 3. Write `.live/handoff.md` (40 lines at most): Asked · Done (steps ✅ / ⏸) · Requirement →
@@ -21,7 +24,8 @@ base directory>/../../scripts/live.mjs`). Language and brevity as in `/kit:live-
    · How to run and test.
 4. Print the spoken summary: 10 lines at most, in the session language, first person, what
    was asked, what was built, how it was proven, what was decided and what is left.
-5. Gate: 2 questions at most with AskUserQuestion — anything left unsaid or to fix? leave
-   `NOTES.md` with the handoff in the repository (default no)? Uncommitted leftovers are only
-   suggested for commit, never committed silently. Log answers with `LIVE decide`.
-6. `LIVE phase wrap`, then print the final `LIVE status` and STOP.
+5. Run `LIVE phase wrap`. Gate: 2 questions at most with AskUserQuestion — anything left
+   unsaid or to fix? leave `NOTES.md` with the handoff in the repository (default no)?
+   Uncommitted leftovers are only suggested for commit, never committed silently. Log answers
+   with `LIVE decide '<question>' '<answer>'`.
+6. Print the final `LIVE status` and STOP.

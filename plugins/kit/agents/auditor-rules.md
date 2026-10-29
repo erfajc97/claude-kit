@@ -57,6 +57,10 @@ they win. Audit exactly the paths the caller names against the baseline SHA it g
 box about 3 minutes: read the diff and its tests, not the whole repo; skip censuses and
 `docs/quality-standard.md`.
 
+A file that is untracked or absent at the baseline SHA is entirely new (its
+`git diff <baseSha>` is empty). The author's step reports are in `.live/steps.md`; the caller
+passes the fast-pass results, so do not rerun the suite, lint or typecheck.
+
 ## 1. What is in scope
 
 If the caller named paths, audit ONLY those (the tree may be shared by several sessions).

@@ -7,10 +7,13 @@ disable-model-invocation: true
 
 # /kit:live-plan — from the ask to small steps (5 min max)
 
-`LIVE` is `node "${CLAUDE_PLUGIN_ROOT}/scripts/live.mjs"` (not substituted → `<this skill's
-base directory>/../../scripts/live.mjs`). The statement is: $ARGUMENTS
+`LIVE <args>` means running `node "${CLAUDE_PLUGIN_ROOT}/scripts/live.mjs" <args>` with Bash
+(variable not substituted → `<this skill's base directory>/../../scripts/live.mjs`). Pass free
+text to `LIVE` in single quotes, without apostrophes, backticks or `$`. Any `ok:false` or
+non-zero exit: show `error` and `hint`, and STOP. Language and brevity as in `/kit:live-map`.
+The statement is: $ARGUMENTS
 
-Empty → ask the user to paste it and STOP. Language and brevity as in `/kit:live-map`.
+Empty → ask the user to paste it and STOP.
 
 ## 1. Read
 
@@ -36,16 +39,20 @@ that is down.
 
 3–5 vertical slices. First: the smallest slice that proves the main flow. Risky or unknown
 parts early; refactors and cleanup last, only if time remains. Minutes for steps = minutes
-left − 12 (audit, wrap, buffer); each step ≤ 10 min. Cut COULD, then SHOULD, to fit, and
-list them under "Out of scope (time)". Write `.live/plan.md`: a title, the assumptions, the
-pre-mortem, the out-of-scope list and this table exactly (no `|` inside a cell, Est in whole
-minutes):
+left − 12 (audit, wrap, buffer); each step ≤ 10 min. Cut the steps that only serve COULD
+requirements, then SHOULD ones, to fit, and list them under "Out of scope (time)". Write
+`.live/plan.md`: a title, the assumptions, the pre-mortem, the out-of-scope list and this
+table exactly — no `|` inside a cell, Est in whole minutes, Reqs the requirement IDs the step
+serves:
 
 ```
-| ID | Step | First test(s) | Est | Status |
-|---|---|---|---|---|
-| S1 | … | `name of the first failing test` | 8 | ⬜ |
+| ID | Step | First test(s) | Est | Reqs | Status |
+|---|---|---|---|---|---|
+| S1 | … | `name of the first failing test` | 8 | R1 | ⬜ |
 ```
+
+Then run `LIVE status --json` and check that `steps.total` equals the rows you wrote and
+`steps.pendingEst` equals the sum of their Est; if not, fix the table and check again.
 
 ## 5. Questions for the interviewer
 
@@ -54,15 +61,15 @@ them as a list the user can ask aloud — not through AskUserQuestion.
 
 ## 6. `--amend`
 
-Add or change the R and S rows, show the time delta, and if the open steps no longer fit,
-ask which one to park (`LIVE step <ID> parked`).
+Add or change the R and S rows (the next free letter for a step in the middle), show the time
+delta, and if the open steps no longer fit, ask which one to park (`LIVE step <ID> parked`).
 
 ## 7. Gate
 
-Print the table (10 lines max) and `LIVE status`. Ask at most 3 questions on the most
-consequential ambiguities with AskUserQuestion (load it with ToolSearch if it is deferred;
-else plain text), recommended option first, each about THIS statement. Fold the answers into
-the plan and the checklist and log each with `LIVE decide "<question>" "<answer>"`
-(`--assumed` when skipped). Then `LIVE phase plan`.
+Print the table (10 lines max). Then run `LIVE phase plan` and, after it, `LIVE status`. Ask
+at most 3 questions on the most consequential ambiguities with AskUserQuestion (load it with
+ToolSearch if it is deferred; else plain text), recommended option first, each about THIS
+statement. Fold the answers into the plan and the checklist and log each with
+`LIVE decide '<question>' '<answer>'` (`--assumed` when skipped).
 
 Finish with `Next: /kit:live-step` and STOP.

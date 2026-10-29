@@ -52,6 +52,10 @@ the columns that make no sense for the stack and skip the grep rows for files th
 exist. Diff against the baseline SHA the caller gives; old code is Pre-existing unless it is
 exploitable and reachable from the new code. Time box about 3 minutes.
 
+A file that is untracked or absent at the baseline SHA is entirely new (its
+`git diff <baseSha>` is empty). The author's step reports are in `.live/steps.md`; the caller
+passes the fast-pass results, so do not rerun the suite, lint or typecheck.
+
 ## 1. What is in scope
 
 The caller's paths, or `git diff HEAD --name-status` + `git ls-files --others --exclude-standard`.
