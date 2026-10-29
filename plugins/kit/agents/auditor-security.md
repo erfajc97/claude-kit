@@ -43,6 +43,15 @@ Invoked directly, without that list: Glob `**/kit/skills/kickoff/external-skills
 under `~/.claude/plugins`, keep the entries whose `usedBy` names you and whose `useWhen`
 (`kind`, `stack`) matches a touched scope, and test each `checkPath` yourself (`ls -d`).
 
+## 0c. Live profile (`kit.json` → `"profile": "live"`)
+
+A timed pairing session on someone else's code. The rule IDs are `L7` and `L8` of
+`.live/rules.md` (plus `L6` for missing negative tests); the Nest/Prisma/FastAPI IDs (`A*`,
+`AN*`, `W*`…) do not exist here. The per-endpoint table applies to any HTTP framework: drop
+the columns that make no sense for the stack and skip the grep rows for files that do not
+exist. Diff against the baseline SHA the caller gives; old code is Pre-existing unless it is
+exploitable and reachable from the new code. Time box about 3 minutes.
+
 ## 1. What is in scope
 
 The caller's paths, or `git diff HEAD --name-status` + `git ls-files --others --exclude-standard`.

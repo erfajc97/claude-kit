@@ -41,6 +41,7 @@ Blocks live in `plugins/kit/skills/kickoff/blocks/<block>.md`:
 | `addon-money.md` | `$` → use `MO` | money, payments, idempotency, locks (optional) |
 | `addon-observability.md` | `OB` | error tracking / analytics / uptime adapters (optional) |
 | `addon-ai.md` | `AI` | LLM providers behind one service (optional) |
+| `live.md` | `L` | timed live-coding sessions; replaces every stack block (see §8) |
 
 (`addon-money.md` uses prefix `MO`.) Future blocks: `web-next.md` (`WN`).
 
@@ -296,3 +297,25 @@ Builder report:
 - E2E: Playwright (web).
 - Machine notes (Windows, rtk proxy) are NOT part of the kit; they belong in the user's
   global settings or the project block.
+
+## 8. Live profile (`kit.json` → `"profile": "live"`)
+
+For a timed pairing session on code someone else wrote. `scripts/live.mjs init` (run by
+`/kit:live-map`) records the baseline SHA, writes `.claude/kit.json` (one scope `app`, mode
+`report`, `tracking: "live"`, `audit.chain` tests / challenge / security) and the session
+files in `.live/` (`state.json`, `rules.md`, `statement.md`, `checklist.md`, `plan.md`,
+`decisions.md`, `parked.md`, `map.md`, `baseline-tests.txt`, `audit.md`, `handoff.md`), and
+hides them through `.git/info/exclude`: the repository's own files and `.gitignore` are never
+touched.
+
+- Rules are `blocks/live.md` (`L`), copied to `.live/rules.md`; the stack blocks are not
+  composed. The auditors read `.live/rules.md` when `profile` is `live` (their section 0c) and
+  diff against the baseline SHA instead of `HEAD`.
+- Commands are gates: each prints a short result, asks at most three questions (a recommended
+  answer first, logged with `live.mjs decide`) and stops. Steps run in the main thread, not in
+  builder agents. Commits only after the user says yes (G7 holds: staging and commit are two
+  commands).
+- The plan is a table in `.live/plan.md` (`| ID | Step | First test(s) | Est | Status |`,
+  Status ⬜ 🔄 ✅ ⏸) that `live.mjs step` rewrites and `live.mjs status` reads for the clock.
+- `/kit:audit` and `/kit:phase-done` point to `/kit:live-audit` and `/kit:live-step` in a live
+  project.

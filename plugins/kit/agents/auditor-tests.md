@@ -47,6 +47,16 @@ Invoked directly, without that list: Glob `**/kit/skills/kickoff/external-skills
 under `~/.claude/plugins`, keep the entries whose `usedBy` names you and whose `useWhen`
 (`kind`, `stack`) matches a touched scope, and test each `checkPath` yourself (`ls -d`).
 
+## 0c. Live profile (`kit.json` → `"profile": "live"`)
+
+A timed pairing session. Rules and the `FT` list: `.live/rules.md` (`L4`, `L6`, `L9`, `L10`);
+acceptance criteria: the steps of `.live/plan.md`. No coverage gate (report the figure when
+the runner prints it) and no G2/G3 IDs. Compare the suite with `.live/baseline-tests.txt`:
+the failures listed there are Pre-existing. Run mutants only when `.claude/kit/mutant/`
+exists; otherwise say so and review the `mutant → killed by` lines of the step reports
+instead. At most 3 mutants, time box about 3 minutes, diff against the baseline SHA the
+caller gives.
+
 ## 1. What is in scope
 
 The paths the caller named, or:

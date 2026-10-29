@@ -6,6 +6,9 @@ argument-hint: "[task id] [quick|full]"
 
 # /kit:phase-done
 
+> **Live sessions.** When `.claude/kit.json` has `"profile": "live"`, use `/kit:live-step`
+> instead: it drafts the commit, makes it on the user's yes and ticks `.live/plan.md`.
+
 You close one task. You never commit by yourself unless the user already asked for the
 commit in this conversation; builders and auditors never commit at all (G7).
 

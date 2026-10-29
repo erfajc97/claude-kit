@@ -6,6 +6,10 @@ argument-hint: "[quick|full] [--all] [--milestone] [--only rules,tests] [--expla
 
 # /kit:audit
 
+> **Live sessions.** When `.claude/kit.json` has `"profile": "live"`, use `/kit:live-audit`
+> instead: it diffs against the baseline SHA (`HEAD` moves with every step commit) and
+> time-boxes the auditors.
+
 You orchestrate read-only auditors and merge their reports. You never fix code here, never
 commit, and never edit a project file except the kit's own state files
 (`.claude/kit-audit-state.json`, `.claude/kit-seal.json`).

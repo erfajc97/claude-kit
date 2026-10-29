@@ -47,6 +47,16 @@ Invoked directly, without that list: Glob `**/kit/skills/kickoff/external-skills
 under `~/.claude/plugins`, keep the entries whose `usedBy` names you and whose `useWhen`
 (`kind`, `stack`) matches a touched scope, and test each `checkPath` yourself (`ls -d`).
 
+## 0c. Live profile (`kit.json` → `"profile": "live"`)
+
+A timed pairing session on code you did not write. The rules are the compact `L` rules in
+`.live/rules.md` (IDs `L1…L14`, plus the `FT` list): read that file instead of the kit blocks
+of `CLAUDE.md`; the project's own `CLAUDE.md`, if any, only tells you its conventions, and
+they win. Audit exactly the paths the caller names against the baseline SHA it gives
+(`git diff <baseSha> -U0 -- <file>` for added lines); everything older is Pre-existing. Time
+box about 3 minutes: read the diff and its tests, not the whole repo; skip censuses and
+`docs/quality-standard.md`.
+
 ## 1. What is in scope
 
 If the caller named paths, audit ONLY those (the tree may be shared by several sessions).

@@ -44,6 +44,14 @@ Invoked directly, without that list: Glob `**/kit/skills/kickoff/external-skills
 under `~/.claude/plugins`, keep the entries whose `usedBy` names you and whose `useWhen`
 (`kind`, `stack`) matches a touched scope, and test each `checkPath` yourself (`ls -d`).
 
+## 0c. Live profile (`kit.json` → `"profile": "live"`)
+
+A timed pairing session: the requirements source is `.live/statement.md` (the ask, verbatim),
+the checklist is `.live/checklist.md`, the plan is `.live/plan.md`, and the decisions the user
+took (including readings of ambiguous requirements) are in `.live/decisions.md`. Run it as
+"final" over every checklist row. Time box about 3 minutes: measure a performance claim only
+when it takes under twenty calls, otherwise ⚠️ with the exact command.
+
 ## 1. What is in scope
 
 - The requirement IDs the caller named, or the IDs of the tasks in the change (Grep the

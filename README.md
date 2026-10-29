@@ -62,6 +62,27 @@ the plugins it needs, so a teammate who opens the repo is offered the same plugi
 `report`" — new mobile code is held to every rule; old api and web code is reported as
 pre-existing and never blocks, while new code there still follows the rules.
 
+## Live coding (timed pairing on code you did not write)
+
+`/kit:adopt` is for repositories you keep; a one-hour session needs something lighter. The
+`live-*` commands run one gate at a time: each ends with a short result and at most three
+questions with a recommended answer, and nothing advances without you.
+
+| Command | What it does | Time |
+|---|---|---|
+| `/kit:live-map [--budget 60] [--lang es\|en]` | baseline, clock, local-only files; maps stack, architecture and risks, and runs the tests BEFORE you touch anything | ~3 min |
+| `/kit:live-plan <statement>` | requirements, assumptions, pre-mortem + security lens, 3–5 test-first steps sized to the time left (`--amend` for scope changes) | ~5 min |
+| `/kit:live-step [S2]` | one step: characterization → RED → GREEN → edge cases → mutation proof → suite against the baseline → report + commit offer | 8–10 min |
+| `/kit:live-ask [focus]` | "what am I missing?" sweep over the diff | 1 min |
+| `/kit:live-audit [--quick]` | fast zero-token pass, then tests, challenge and security auditors in parallel | ~4 min |
+| `/kit:live-wrap` | requirement → evidence, decisions, parked risks, what you would do next | 2 min |
+| `/kit:live-status` | clock, phase, whether the plan fits, next command | 5 s |
+
+Session files live in `.live/` and `.claude/kit.json`, hidden through `.git/info/exclude`; the
+repository's own files and `.gitignore` are never touched, so the diff holds only code and
+tests. The compact rules are `blocks/live.md` (`L1…`); the auditors switch to them when
+`kit.json` has `"profile": "live"`.
+
 ## The daily loop
 
 ```text
