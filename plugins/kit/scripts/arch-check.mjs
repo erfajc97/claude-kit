@@ -205,6 +205,29 @@ function loadSpecs(dirs) {
   return specs;
 }
 
+/**
+ * A project spec may widen a kit `layout` check with `extend: [{ rule, unit, allowFiles?, allowDirs? }]`
+ * (e.g. a project convention such as `*-db.ts` tenancy doors at a module root). It only adds
+ * allowed names to the layout checks with the same rule and unit; it can never drop a check.
+ */
+export function applyExtensions(specs) {
+  const extensions = specs.flatMap((spec) => spec.extend ?? []);
+  if (extensions.length === 0) return specs;
+  return specs.map((spec) => ({
+    ...spec,
+    checks: (spec.checks ?? []).map((check) => {
+      if (check.type !== 'layout') return check;
+      const mine = extensions.filter((e) => e.rule === check.rule && e.unit === check.unit);
+      if (mine.length === 0) return check;
+      return {
+        ...check,
+        allowFiles: [...(check.allowFiles ?? []), ...mine.flatMap((e) => e.allowFiles ?? [])],
+        ...(check.allowDirs ? { allowDirs: [...check.allowDirs, ...mine.flatMap((e) => e.allowDirs ?? [])] } : {}),
+      };
+    }),
+  }));
+}
+
 /** `appliesTo.kind` (`api | web | mobile | *`); `scope` is accepted as an older spelling. */
 const specKind = (spec) => spec.appliesTo?.kind ?? spec.appliesTo?.scope;
 
@@ -441,7 +464,7 @@ export function archCheck({ root, all = false, base = 'HEAD', paths = [], blocks
     scopes.push(entry);
   }
   const addons = kit?.addons ?? [];
-  const specs = loadSpecs([blocksDir, join(root, '.claude', 'kit-structure')]);
+  const specs = applyExtensions(loadSpecs([blocksDir, join(root, '.claude', 'kit-structure')]));
   for (const s of scopes.filter((x) => x.mode !== 'off')) {
     const stackSpec = specs.some((spec) => specKind(spec) === s.kind && [].concat(spec.appliesTo?.stacks ?? []).includes(s.stack));
     if (s.stack && !stackSpec) notes.push(`No structure spec for stack \`${s.stack}\` (scope \`${s.area}\`, kind \`${s.kind}\`): only its common checks ran.`);

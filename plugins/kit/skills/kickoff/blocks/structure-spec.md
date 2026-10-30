@@ -35,6 +35,23 @@ the same commit.
   (one line), optional `exclude` (globs) and optional `when: { "exists": "<path>" }` (the
   check runs only if that scope-relative path exists).
 
+## Widening a kit layout (`extend`, project specs only)
+
+A project convention the kit's `layout` check does not know (for example tenancy doors
+`orders-db.ts` at a module root) is declared in a project spec, never by editing the kit:
+
+```json
+{
+  "block": "project-doors",
+  "appliesTo": { "kind": "api", "stacks": ["nestjs"] },
+  "extend": [{ "rule": "AN1", "unit": "src/modules/*", "allowFiles": ["^[a-z0-9-]+-db\\.ts$"] }]
+}
+```
+
+Each entry adds its `allowFiles` (and `allowDirs`) to every `layout` check with the same
+`rule` and `unit`. It can only allow more names; it never removes or weakens another check.
+Record the convention as a `P` rule in the project's `CLAUDE.md` with its reason.
+
 ## Check types
 
 | `type` | Fields | Finding when |

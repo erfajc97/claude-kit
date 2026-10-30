@@ -232,6 +232,20 @@ describe('api layers (A1, A8, AN1, AN12) and Python imports', () => {
     assert.match(rows[0], /\.\.billing\.repository/);
   });
 
+  it('a project spec can allow a project file convention at a module root (extend), only for its rule and unit', () => {
+    const extend = {
+      block: 'project-doors',
+      appliesTo: { kind: 'api', stacks: ['nestjs'] },
+      extend: [{ rule: 'AN1', unit: 'src/modules/*', allowFiles: ['^[a-z0-9-]+-db\\.ts$'] }],
+    };
+    const repo = makeRepo();
+    write(repo, '.claude/kit-structure/project-doors.structure.json', JSON.stringify(extend));
+    write(repo, 'apps/api/src/modules/orders/orders-db.ts', 'export const door = 1;\n');
+    assert.ok(!hasRule(check(repo).counted, 'AN1'));
+    write(repo, 'apps/api/src/modules/orders/orders.utils.ts', 'export const x = 1;\n');
+    assert.ok(hasRule(check(repo).counted, 'AN1'));
+  });
+
   it('stack specs apply only to their stack: NestJS layout is not checked on FastAPI', () => {
     const repo = makeRepo({ kit: { scopes: { api: { stack: 'fastapi', path: 'api', mode: 'enforce' } } } });
     write(repo, 'api/src/modules/orders/orders.utils.ts', 'export default 1;\n');
